@@ -1,0 +1,129 @@
+{
+    "tap_name": "Zoho_CRM",
+    "required_config_keys": [
+        "refresh_token",
+        "client_id",
+        "client_secret",
+        "start_date",
+        "api_version"
+    ],
+    "page_size": 200,
+    "next_page_key": "page_token",
+    "pagination_key": "page",
+    "headers": {
+        "Accept": "application/json"
+    },
+    "params": {},
+    "auth_header_key": "Authorization",
+    "auth_config_key": "access_token",
+    "base_url": "https://www.zohoapis.com/crm/",
+    "streams": [
+        {
+            "name": "appointments",
+            "key_properties": [
+                "id"
+            ],
+            "replication_method": "INCREMENTAL",
+            "replication_keys": ["Modified_Time"],
+            "path": "Appointments__s",
+            "data_key": "data",
+            "parent": "",
+            "doc_link": "https://www.zoho.com/crm/developer/docs/api/v8/get-appointments.html"
+        },
+        {
+            "name": "currencies",
+            "key_properties": [
+                "id"
+            ],
+            "replication_method": "INCREMENTAL",
+            "replication_keys": ["modified_time"],
+            "path": "org/currencies",
+            "data_key": "data",
+            "parent": "",
+            "doc_link": "https://www.zoho.com/crm/developer/docs/api/v8/get-currencies-data.html"
+        },
+        {
+            "name": "organization",
+            "key_properties": [
+                "id"
+            ],
+            "replication_method": "FULL_TABLE",
+            "replication_keys": [],
+            "path": "org",
+            "data_key": "org",
+            "parent": "",
+            "doc_link": "https://www.zoho.com/crm/developer/docs/api/v8/get-org-data.html"
+        },
+        {
+            "name": "profiles",
+            "key_properties": [
+                "id"
+            ],
+            "replication_method": "INCREMENTAL",
+            "replication_keys": ["modified_time"],
+            "path": "settings/profiles",
+            "data_key": "profiles",
+            "parent": "",
+            "doc_link": "https://www.zoho.com/crm/developer/docs/api/v8/get-profiles.html"
+        },
+        {
+            "name": "roles",
+            "key_properties": [
+                "id"
+            ],
+            "replication_method": "INCREMENTAL",
+            "replication_keys": ["modified_time__s"],
+            "path": "settings/roles",
+            "data_key": "roles",
+            "parent": "",
+            "doc_link": "https://www.zoho.com/crm/developer/docs/api/v8/get-roles.html"
+        },
+        {
+            "name": "services",
+            "key_properties": [
+                "id"
+            ],
+            "replication_method": "INCREMENTAL",
+            "replication_keys": ["Modified_Time"],
+            "path": "/Services__s",
+            "data_key": "data",
+            "parent": "",
+            "doc_link": "https://www.zoho.com/crm/developer/docs/api/v8/get-services.html"
+        },
+        {
+            "name": "territories",
+            "key_properties": [
+                "id"
+            ],
+            "replication_method": "INCREMENTAL",
+            "replication_keys": ["modified_time"],
+            "path": "settings/territories",
+            "data_key": "territories",
+            "parent": "",
+            "doc_link": "https://www.zoho.com/crm/developer/docs/api/v8/territories.html"
+        },
+        {
+            "name": "users",
+            "key_properties": [
+                "id"
+            ],
+            "replication_method": "INCREMENTAL",
+            "replication_keys": ["Modified_Time"],
+            "path": "users",
+            "data_key": "users",
+            "parent": "",
+            "doc_link": "https://www.zoho.com/crm/developer/docs/api/v8/get-users.html"
+        }
+    ],
+    "tap_tester_creds": {
+        "client_id": "TAP_ZOHO_CRM_CLIENT_ID",
+        "client_secret": "TAP_ZOHO_CRM_CLIENT_SECRET",
+        "refresh_token": "TAP_ZOHO_CRM_REFRESH_TOKEN"
+    },
+    "author": "Stitch",
+    "third_party_dependencies": [
+        "singer-python==6.1.1",
+        "requests==2.32.4",
+        "backoff==2.2.1"
+    ]
+}

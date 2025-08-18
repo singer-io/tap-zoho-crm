@@ -51,12 +51,12 @@ class Client:
     def __init__(self, config: Mapping[str, Any]) -> None:
         self.config = config
         self._session = session()
-        self.base_url = "https://www.zohoapis.com/crm/"
         self._access_token = None
         self._expires_at = None
         self._scope = None
-        self._api_domain = None
+        self._api_domain = "https://www.zohoapis.com"
         self._token_type = None
+        self.base_url = f"{self._api_domain}/crm/{self.config.get("api_version", "v8")}"
 
         config_request_timeout = config.get("request_timeout")
         self.request_timeout = float(config_request_timeout) if config_request_timeout else REQUEST_TIMEOUT

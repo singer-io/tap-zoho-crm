@@ -7,7 +7,14 @@ from tap_zoho_crm.sync import sync
 
 LOGGER = singer.get_logger()
 
-REQUIRED_CONFIG_KEYS = ['refresh_token', 'client_id', 'client_secret', 'start_date', 'api_version']
+REQUIRED_CONFIG_KEYS = [
+    'refresh_token',
+    'client_id',
+    'client_secret',
+    'start_date',
+    'api_version',
+    'select_fields_by_default'
+    ]
 
 def do_discover():
     """

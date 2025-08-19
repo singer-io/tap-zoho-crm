@@ -5,7 +5,8 @@
         "client_id",
         "client_secret",
         "start_date",
-        "api_version"
+        "api_version",
+        "select_fields_by_default"
     ],
     "page_size": 200,
     "next_page_key": "page_token",
@@ -18,18 +19,6 @@
     "auth_config_key": "access_token",
     "base_url": "https://www.zohoapis.com/crm/",
     "streams": [
-        {
-            "name": "appointments",
-            "key_properties": [
-                "id"
-            ],
-            "replication_method": "INCREMENTAL",
-            "replication_keys": ["Modified_Time"],
-            "path": "Appointments__s",
-            "data_key": "data",
-            "parent": "",
-            "doc_link": "https://www.zoho.com/crm/developer/docs/api/v8/get-appointments.html"
-        },
         {
             "name": "currencies",
             "key_properties": [
@@ -77,18 +66,6 @@
             "data_key": "roles",
             "parent": "",
             "doc_link": "https://www.zoho.com/crm/developer/docs/api/v8/get-roles.html"
-        },
-        {
-            "name": "services",
-            "key_properties": [
-                "id"
-            ],
-            "replication_method": "INCREMENTAL",
-            "replication_keys": ["Modified_Time"],
-            "path": "/Services__s",
-            "data_key": "data",
-            "parent": "",
-            "doc_link": "https://www.zoho.com/crm/developer/docs/api/v8/get-services.html"
         },
         {
             "name": "territories",

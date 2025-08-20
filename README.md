@@ -106,7 +106,7 @@ This tap:
    - `start_date` - the default value to use if no bookmark exists for an endpoint (rfc3339 date string)
    - `user_agent` - (string, optional): Process and email for API logging purposes. Example: `tap-zoho-crm <api_user_email@your_company.com>`
    - `api_version` - (string) Current api version which we are using to extract data.
-   - `select_fields_by_default` - (boolean-true/false) If we want to add new fields, which are added to module/stream after discovery.
+   - `auto_add_new_data` - (boolean-true/false) If we want to add new metadata fields, which are added to module/stream after running discovery.
    - `request_timeout` - (integer, `300`): Max time for which request should wait to get a response. Default request_timeout is 300 seconds.
 
     ```json
@@ -117,7 +117,7 @@ This tap:
         "start_date": "2019-01-01T00:00:00Z",
         "user_agent": "tap-zoho-crm <api_user_email@your_company.com>",
         "api_version": "v8",
-        "select_fields_by_default": false,
+        "auto_add_new_data": false,
         "request_timeout": 300
     }
     ```

@@ -6,7 +6,7 @@
         "client_secret",
         "start_date",
         "api_version",
-        "select_fields_by_default"
+        "auto_add_new_data"
     ],
     "page_size": 200,
     "next_page_key": "page_token",

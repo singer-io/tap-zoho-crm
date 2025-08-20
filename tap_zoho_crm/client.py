@@ -178,5 +178,9 @@ class Client:
             else:
                 raise ValueError(f"Unsupported method: {method}")
 
+        # if there is no content then return empty dict
+        if response.status_code == 204:
+            return {}
+
         return response.json()
 

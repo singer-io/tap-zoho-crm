@@ -221,6 +221,10 @@ def get_dynamic_schema(client: Client) -> Tuple[Dict, Dict]:
                 property_schema = field_to_property_schema(field)
                 properties[field_name] = property_schema
 
+        if "id" not in properties:
+            properties["id"] = {"type": ["null", "string"]}
+            pk_field = "id"
+
         module_schema = {
             "type": "object",
             "properties": properties

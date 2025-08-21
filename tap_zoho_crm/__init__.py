@@ -1,5 +1,6 @@
 import sys
 import json
+from typing import Dict
 import singer
 from tap_zoho_crm.client import Client
 from tap_zoho_crm.discover import discover
@@ -16,12 +17,12 @@ REQUIRED_CONFIG_KEYS = [
     'auto_add_new_metadata'
     ]
 
-def do_discover():
+def do_discover(client: Client, config: Dict):
     """
     Discover and emit the catalog to stdout
     """
     LOGGER.info("Starting discover")
-    catalog = discover()
+    catalog = discover(client=client, config=config)
     json.dump(catalog.to_dict(), sys.stdout, indent=2)
     LOGGER.info("Finished discover")
 
@@ -38,7 +39,9 @@ def main():
 
     with Client(parsed_args.config) as client:
         if parsed_args.discover:
-            do_discover()
+            do_discover(
+                client=client,
+                config=parsed_args.config)
         elif parsed_args.catalog:
             sync(
                 client=client,

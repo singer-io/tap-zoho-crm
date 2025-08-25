@@ -46,7 +46,7 @@ def load_schema_references() -> Dict:
     return refs
 
 
-def get_static_schemas() -> Tuple[Dict, Dict]:
+def get_static_schemas(config:Dict) -> Tuple[Dict, Dict]:
     """
     Load the schema references, prepare metadata for each streams from a
     static 'stream's.json' file and return schema and metadata for the catalog.
@@ -78,6 +78,10 @@ def get_static_schemas() -> Tuple[Dict, Dict]:
                 mdata = metadata.write(
                     mdata, ("properties", field_name), "inclusion", "automatic"
                 )
+
+        if config.get("auto_add_new_metadata", False):
+            mdata = metadata.write(
+                mdata, (), 'selected', True)
 
         mdata = metadata.to_list(mdata)
         field_metadata[stream_name] = mdata
@@ -183,7 +187,7 @@ def field_to_property_schema(field: Dict) -> Dict:
     return {"type": ["null", "string"]}
 
 
-def get_dynamic_schema(client: Client) -> Tuple[Dict, Dict]:
+def get_dynamic_schema(client: Client, config: Dict) -> Tuple[Dict, Dict]:
     """
     Dynamically generate or fetch stream schemas and associated metadata
     and return schema and metadata for the catalog.
@@ -244,6 +248,10 @@ def get_dynamic_schema(client: Client) -> Tuple[Dict, Dict]:
         if replication_key:
             mdata = metadata.write(
                 mdata, ('properties', replication_key), 'inclusion', 'automatic')
+
+        if config.get("auto_add_new_metadata", False):
+            mdata = metadata.write(
+                mdata, (), 'selected', True)
 
         field_metadata[module] = metadata.to_list(mdata)
 

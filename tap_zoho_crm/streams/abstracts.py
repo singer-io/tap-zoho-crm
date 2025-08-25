@@ -29,13 +29,17 @@ class BaseStream(ABC):
     url_endpoint = ""
     path = ""
     page_size = 200
-    next_page_key = "page_token"
+    next_page_key = "page"
+    next_page_token = "page_token"
     headers = {'Accept': 'application/json'}
     children = []
     parent = ""
     data_key = ""
+    bookmark_value = None
     parent_bookmark_key = ""
-    http_method = "POST"
+    http_method = "GET"
+    pagination_supported = True
+    is_dynamic = False
 
     def __init__(self, client=None, catalog=None) -> None:
         self.client = client
@@ -96,25 +100,63 @@ class BaseStream(ABC):
          - https://github.com/singer-io/getting-started/blob/master/docs/SYNC_MODE.md
         """
 
-
     def get_records(self) -> Iterator:
-        """Interacts with api client interaction and pagination."""
-        self.params["page"] = self.page_size
-        next_page = 1
-        while next_page:
-            response = self.client.make_request(
-                self.http_method,
-                self.url_endpoint,
-                self.params,
-                self.headers,
-                body=json.dumps(self.data_payload),
-                path=self.path
-            )
-            raw_records = response.get(self.data_key, [])
-            next_page = response.get(self.next_page_key)
+        """Interacts with API client and handles pagination and field batching."""
+        self.params["per_page"] = self.page_size
 
-            self.params[self.next_page_key] = next_page
-            yield from raw_records
+        if not self.is_dynamic:
+            next_page = 1
+            while next_page:
+                response = self.client.make_request(
+                    self.http_method,
+                    self.url_endpoint,
+                    self.params,
+                    self.headers,
+                    body=json.dumps(self.data_payload),
+                    path=self.path
+                )
+                raw_records = response.get(self.data_key, [])
+                next_page = self.update_pagination_key(response, next_page)
+                yield from raw_records
+            return
+
+        # Dynamic stream logic: field batching with merging
+        field_names = list(self.schema.get("properties", {}).keys())
+        if "id" not in field_names:
+            field_names.insert(0, "id")
+
+        batched_fields = [field_names[item:item + 50] for item in range(0, len(field_names), 50)]
+        next_page = 1
+
+        while next_page:
+            merged_records: Dict[str, Dict] = {}
+            response = None
+
+            for field_batch in batched_fields:
+                self.params["fields"] = ",".join(field_batch)
+                response = self.client.make_request(
+                    self.http_method,
+                    self.url_endpoint,
+                    self.params,
+                    self.headers,
+                    body=json.dumps(self.data_payload),
+                    path=self.path
+                )
+
+                records = response.get(self.data_key, [])
+                for record in records:
+                    record_id = record.get("id")
+                    if not record_id:
+                        continue
+                    if record_id not in merged_records:
+                        merged_records[record_id] = {}
+                    merged_records[record_id].update(record)
+
+            next_page = self.update_pagination_key(response, next_page) if response else None
+
+            for record in merged_records.values():
+                yield record
+
 
     def write_schema(self) -> None:
         """
@@ -151,6 +193,25 @@ class BaseStream(ABC):
         Get the URL endpoint for the stream
         """
         return self.url_endpoint or f"{self.client.base_url}/{self.path}"
+
+    def update_pagination_key(self, raw_records, next_page):
+        """Updates the pagination key for fetching the next page of results."""
+        if not self.pagination_supported or not raw_records or "info" not in raw_records:
+            return None
+
+        info = raw_records["info"]
+
+        next_page_token = info.get("next_page_token")
+        if next_page_token:
+            self.params[self.next_page_token] = next_page_token
+            return next_page_token
+
+        if info.get("more_records"):
+            next_page += 1
+            self.params[self.next_page_key] = next_page
+            return next_page
+
+        return None
 
 
 class IncrementalStream(BaseStream):
@@ -190,7 +251,7 @@ class IncrementalStream(BaseStream):
         bookmark_date = self.get_bookmark(state, self.tap_stream_id)
         current_max_bookmark_date = bookmark_date
         self.update_params(updated_since=bookmark_date)
-        self.update_data_payload(parent_obj)
+        self.update_data_payload(parent_obj=parent_obj)
         self.url_endpoint = self.get_url_endpoint(parent_obj)
 
         with metrics.record_counter(self.tap_stream_id) as counter:
@@ -200,7 +261,7 @@ class IncrementalStream(BaseStream):
                     record, self.schema, self.metadata
                 )
 
-                record_bookmark = transformed_record[self.replication_keys[0]]
+                record_bookmark = transformed_record.get(self.replication_keys[0]) or bookmark_date
                 if record_bookmark >= bookmark_date:
                     if self.is_selected():
                         write_record(self.tap_stream_id, transformed_record)
@@ -230,7 +291,7 @@ class FullTableStream(BaseStream):
     ) -> Dict:
         """Abstract implementation for `type: Fulltable` stream."""
         self.url_endpoint = self.get_url_endpoint(parent_obj)
-        self.update_data_payload(parent_obj)
+        self.update_data_payload(parent_obj=parent_obj)
         with metrics.record_counter(self.tap_stream_id) as counter:
             for record in self.get_records():
                 transformed_record = transformer.transform(

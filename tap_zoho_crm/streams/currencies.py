@@ -5,6 +5,6 @@ class Currencies(IncrementalStream):
     key_properties = ["id"]
     replication_method = "INCREMENTAL"
     replication_keys = ["modified_time"]
-    data_key = "data"
+    data_key = "currencies"
     path = "org/currencies"
 

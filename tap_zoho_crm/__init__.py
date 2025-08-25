@@ -23,8 +23,10 @@ def do_discover(client: Client, config: Dict):
     """
     LOGGER.info("Starting discover")
     catalog = discover(client=client, config=config)
-    json.dump(catalog.to_dict(), sys.stdout, indent=2)
+    if not config.get("auto_add_new_metadata", False):
+        json.dump(catalog.to_dict(), sys.stdout, indent=2)
     LOGGER.info("Finished discover")
+    return catalog
 
 
 @singer.utils.handle_top_exception(LOGGER)
@@ -38,15 +40,22 @@ def main():
         state = parsed_args.state
 
     with Client(parsed_args.config) as client:
+        config = parsed_args.config
         if parsed_args.discover:
             do_discover(
                 client=client,
-                config=parsed_args.config)
+                config=config)
         elif parsed_args.catalog:
+            catalog = parsed_args.catalog
+            if config.get("auto_add_new_metadata", False):
+                LOGGER.info("Fetching and applying metadata for stream during sync.")
+                catalog = do_discover(
+                            client=client,
+                            config=config)
             sync(
                 client=client,
-                config=parsed_args.config,
-                catalog=parsed_args.catalog,
+                config=config,
+                catalog=catalog,
                 state=state)
 
 

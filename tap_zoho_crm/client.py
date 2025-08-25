@@ -1,5 +1,6 @@
 from typing import Any, Dict, Mapping, Optional, Tuple
 from datetime import datetime, timedelta
+import time
 
 import backoff
 import requests
@@ -7,7 +8,13 @@ from requests import session
 from requests.exceptions import Timeout, ConnectionError, ChunkedEncodingError
 from singer import get_logger, metrics
 
-from tap_zoho_crm.exceptions import ERROR_CODE_EXCEPTION_MAPPING, ZohoCRMError, ZohoCRMBackoffError
+from tap_zoho_crm.exceptions import (
+    ERROR_CODE_EXCEPTION_MAPPING,
+    ZohoCRMError,
+    ZohoCRMRateLimitError,
+    ZohoCRMInternalServerError,
+    ZohoCRMServiceUnavailableError
+    )
 
 LOGGER = get_logger()
 REQUEST_TIMEOUT = 300
@@ -26,17 +33,35 @@ def raise_for_error(response: requests.Response) -> None:
     except Exception:
         response_json = {}
     if response.status_code not in [200, 201, 204]:
-        if response_json.get("error"):
-            message = f"HTTP-error-code: {response.status_code}, Error: {response_json.get('error')}"
+        error_code = response_json.get("code", "")
+        error_text = response_json.get("message", "")
+        error_status = response_json.get("status", "")
+        if response.status_code == 401 and error_code.upper() == 'OAUTH_SCOPE_MISMATCH':
+            LOGGER.info(
+                f"Skipping stream: The OAuth token does not have the required scope to access the stream."
+            )
+            return
         else:
-            error_message = ERROR_CODE_EXCEPTION_MAPPING.get(
-                response.status_code, {}
-            ).get("message", "Unknown Error")
-            message = f"HTTP-error-code: {response.status_code}, Error: {response_json.get('message', error_message)}"
-        exc = ERROR_CODE_EXCEPTION_MAPPING.get(response.status_code, {}).get(
-            "raise_exception", ZohoCRMError
-        )
-        raise exc(message, response) from None
+            if error_status.lower() == "error":
+                message = f"HTTP-error-code: {response.status_code}, Response-error-code: {error_code} Error: {error_text}"
+            else:
+                error_message = ERROR_CODE_EXCEPTION_MAPPING.get(
+                    response.status_code, {}
+                ).get("message", "Unknown Error")
+                message = f"HTTP-error-code: {response.status_code}, Error: {response_json.get('message', error_message)}"
+            exc = ERROR_CODE_EXCEPTION_MAPPING.get(response.status_code, {}).get(
+                "raise_exception", ZohoCRMError
+            )
+            raise exc(message, response) from None
+
+
+def wait_if_retry_after(details):
+    """Backoff handler that checks for a 'retry_after' attribute in the exception
+    and sleeps for the specified duration to respect API rate limits.
+    """
+    exc = details['exception']
+    if hasattr(exc, 'retry_after') and exc.retry_after is not None:
+        time.sleep(exc.retry_after)
 
 class Client:
     """
@@ -152,16 +177,18 @@ class Client:
         )
 
     @backoff.on_exception(
-        wait_gen=backoff.expo,
+        wait_gen=lambda: backoff.expo(factor=2),
+        on_backoff=wait_if_retry_after,
         exception=(
             ConnectionResetError,
             ConnectionError,
             ChunkedEncodingError,
             Timeout,
-            ZohoCRMBackoffError
+            ZohoCRMRateLimitError,
+            ZohoCRMInternalServerError,
+            ZohoCRMServiceUnavailableError
         ),
-        max_tries=5,
-        factor=2,
+        max_tries=5
     )
     def __make_request(
         self, method: str, endpoint: str, **kwargs
@@ -177,7 +204,6 @@ class Client:
             else:
                 raise ValueError(f"Unsupported method: {method}")
 
-        # if there is no content then return empty dict
         if response.status_code == 204:
             return {}
 

@@ -12,8 +12,8 @@ def discover(client: Client, config: Dict) -> Catalog:
     """
     Run the discovery mode, prepare the catalog file and return the catalog.
     """
-    static_schemas, static_field_metadata = get_static_schemas()
-    dynamic_schemas, dynamic_field_metadata = get_dynamic_schema(client)
+    static_schemas, static_field_metadata = get_static_schemas(config)
+    dynamic_schemas, dynamic_field_metadata = get_dynamic_schema(client, config)
 
     schemas = static_schemas | dynamic_schemas
     field_metadata = static_field_metadata | dynamic_field_metadata

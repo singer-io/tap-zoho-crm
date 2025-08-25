@@ -87,7 +87,6 @@ class Client:
             body={},
             is_auth_req=False
         )
-        LOGGER.info(resp_json)
         self._access_token = resp_json.get("access_token")
         self._scope = resp_json.get("scope")
         self._api_domain = resp_json.get("api_domain")

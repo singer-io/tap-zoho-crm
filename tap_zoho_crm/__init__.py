@@ -13,7 +13,7 @@ REQUIRED_CONFIG_KEYS = [
     'client_secret',
     'start_date',
     'api_version',
-    'auto_add_new_metadata'
+    'select_fields_by_default'
     ]
 
 def do_discover():

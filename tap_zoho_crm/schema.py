@@ -210,7 +210,6 @@ def get_dynamic_schema(client: Client) -> Tuple[Dict, Dict]:
         properties = dict()
         replication_key, pk_field = get_replication_and_primary_key(module, module_metadata)
 
-        # Modules would be skipped when they don't have an expected pk field
         if not pk_field:
             LOGGER.info(f"Skipping module {module}: No primary key field found.")
             continue

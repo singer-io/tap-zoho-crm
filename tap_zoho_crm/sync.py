@@ -64,6 +64,22 @@ def build_dynamic_stream(client, catalog_entry: singer.CatalogEntry) -> object:
     return DynamicStreamClass(client, catalog_entry) # pylint: disable=abstract-class-instantiated
 
 
+def deselect_unselected_fields(catalog_entry):
+    """
+    If a field isn't manually deselected, it will be included in the sync by default,
+    so we must explicitly deselect any such fields in the catalog.
+    """
+    LOGGER.info("Deselecting unselected fields")
+    mdata = metadata.to_map(catalog_entry.metadata)
+
+    for breadcrumb, meta in mdata.items():
+        if breadcrumb and meta.get('selected') is None:
+            LOGGER.info("Deselecting field: %s", breadcrumb[-1])
+            meta['selected'] = False
+
+    catalog_entry.metadata = metadata.to_list(mdata)
+
+
 def sync(client: Client, config: Dict, catalog: singer.Catalog, state) -> None:
     """
     Sync selected streams from catalog
@@ -71,7 +87,11 @@ def sync(client: Client, config: Dict, catalog: singer.Catalog, state) -> None:
 
     streams_to_sync = []
     for stream in catalog.get_selected_streams(state):
+        catalog_entry = catalog.get_stream(stream.stream)
+        if config.get('select_fields_by_default') is False:
+            deselect_unselected_fields(catalog_entry)
         streams_to_sync.append(stream.stream)
+
     LOGGER.info("selected_streams: {}".format(streams_to_sync))
 
     last_stream = singer.get_currently_syncing(state)

@@ -9,7 +9,7 @@ jobs:
           name: "Setup virtual env"
           command: |
             python3 -mvenv /usr/local/share/virtualenvs/tap-zoho-crm
-            source /usr/local/share/virtualenvs/tap-zoho-crm/bin/activate
+            source /usr/local/share/virtualenvs/tap_zoho_crm/bin/activate
             pip install -U "pip==22.2.2" "setuptools==65.3.0"
             pip install .[dev]
       - run:
@@ -20,14 +20,14 @@ jobs:
       - run:
           name: "pylint"
           command: |
-            source /usr/local/share/virtualenvs/tap-zoho-crm/bin/activate
+            source /usr/local/share/virtualenvs/tap_zoho_crm/bin/activate
             pip install pylint
             pylint tap_zoho_crm -d C,R,W
       - add_ssh_keys
       - run:
           name: "Unit Tests"
           command: |
-            source /usr/local/share/virtualenvs/tap-zoho-crm/bin/activate
+            source /usr/local/share/virtualenvs/tap_zoho_crm/bin/activate
             pip install pytest pytest-cov
             pytest --cov=tap_zoho_crm --cov-report=html:htmlcov --cov-config=.coveragerc tests/unittests
             coverage html

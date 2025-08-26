@@ -8,12 +8,12 @@ from tap_zoho_crm.client import Client
 LOGGER = singer.get_logger()
 
 
-def discover(client: Client, config: Dict) -> Catalog:
+def discover(client: Client) -> Catalog:
     """
     Run the discovery mode, prepare the catalog file and return the catalog.
     """
-    static_schemas, static_field_metadata = get_static_schemas(config)
-    dynamic_schemas, dynamic_field_metadata = get_dynamic_schema(client, config)
+    static_schemas, static_field_metadata = get_static_schemas()
+    dynamic_schemas, dynamic_field_metadata = get_dynamic_schema(client)
 
     schemas = static_schemas | dynamic_schemas
     field_metadata = static_field_metadata | dynamic_field_metadata

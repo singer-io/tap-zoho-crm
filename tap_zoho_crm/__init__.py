@@ -14,17 +14,16 @@ REQUIRED_CONFIG_KEYS = [
     'client_secret',
     'start_date',
     'api_version',
-    'auto_add_new_metadata'
+    'select_fields_by_default'
     ]
 
-def do_discover(client: Client, config: Dict):
+def do_discover(client: Client):
     """
     Discover and emit the catalog to stdout
     """
     LOGGER.info("Starting discover")
-    catalog = discover(client=client, config=config)
-    if not config.get("auto_add_new_metadata", False):
-        json.dump(catalog.to_dict(), sys.stdout, indent=2)
+    catalog = discover(client=client)
+    json.dump(catalog.to_dict(), sys.stdout, indent=2)
     LOGGER.info("Finished discover")
     return catalog
 
@@ -42,16 +41,9 @@ def main():
     with Client(parsed_args.config) as client:
         config = parsed_args.config
         if parsed_args.discover:
-            do_discover(
-                client=client,
-                config=config)
+            do_discover(client=client)
         elif parsed_args.catalog:
             catalog = parsed_args.catalog
-            if config.get("auto_add_new_metadata", False):
-                LOGGER.info("Fetching and applying metadata for stream during sync.")
-                catalog = do_discover(
-                            client=client,
-                            config=config)
             sync(
                 client=client,
                 config=config,

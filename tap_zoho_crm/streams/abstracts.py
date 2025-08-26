@@ -101,7 +101,11 @@ class BaseStream(ABC):
         """
 
     def get_records(self) -> Iterator:
-        """Interacts with API client and handles pagination and field batching."""
+        """Fetch records from the Zoho CRM API, handling pagination and dynamic field batching.
+        - For static streams: makes paginated API requests and yields records directly.
+        - For dynamic streams: batches fields into groups of 50 (due to API limits), merges partial
+        records across field batches by record ID, and yields fully combined records.
+        """
         self.params["per_page"] = self.page_size
 
         if not self.is_dynamic:

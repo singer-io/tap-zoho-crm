@@ -39,7 +39,7 @@ class ZohoCRMUnprocessableEntityError(ZohoCRMBackoffError):
 class ZohoCRMRateLimitError(ZohoCRMBackoffError):
     """class representing 429 status code."""
     def __init__(self, message=None, response=None):
-        """Initialize the MondayRateLimitError. Parses the 'retry_in_seconds'  from the response (if present) and sets the
+        """Initialize the ZohoCRMRateLimitError. Parses the 'retry_in_seconds'  from the response (if present) and sets the
             `retry_after` attribute accordingly.
         """
         self.response = response

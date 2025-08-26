@@ -265,7 +265,10 @@ class IncrementalStream(BaseStream):
                     record, self.schema, self.metadata
                 )
 
-                record_bookmark = transformed_record.get(self.replication_keys[0]) or bookmark_date
+                record_bookmark = transformed_record.get(self.replication_keys[0])
+                if record_bookmark is None:
+                    record_bookmark = bookmark_date
+
                 if record_bookmark >= bookmark_date:
                     if self.is_selected():
                         write_record(self.tap_stream_id, transformed_record)

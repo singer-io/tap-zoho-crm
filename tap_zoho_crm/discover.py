@@ -8,7 +8,7 @@ from tap_zoho_crm.client import Client
 LOGGER = singer.get_logger()
 
 
-def discover(client: Client, config: Dict) -> Catalog:
+def discover(client: Client) -> Catalog:
     """
     Run the discovery mode, prepare the catalog file and return the catalog.
     """

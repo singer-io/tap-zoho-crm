@@ -17,12 +17,12 @@ REQUIRED_CONFIG_KEYS = [
     'select_fields_by_default'
     ]
 
-def do_discover(client: Client, config: Dict):
+def do_discover(client: Client):
     """
     Discover and emit the catalog to stdout
     """
     LOGGER.info("Starting discover")
-    catalog = discover(client=client, config=config)
+    catalog = discover(client=client)
     json.dump(catalog.to_dict(), sys.stdout, indent=2)
     LOGGER.info("Finished discover")
 
@@ -39,9 +39,7 @@ def main():
 
     with Client(parsed_args.config) as client:
         if parsed_args.discover:
-            do_discover(
-                client=client,
-                config=parsed_args.config)
+            do_discover(client=client)
         elif parsed_args.catalog:
             sync(
                 client=client,

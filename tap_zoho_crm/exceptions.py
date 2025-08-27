@@ -46,7 +46,10 @@ class ZohoCRMRateLimitError(ZohoCRMBackoffError):
         self.retry_after = None
 
         if response is not None:
-            self.retry_after = int(response.headers.get("Retry-After", 60))
+            try:
+                self.retry_after = int(response.headers.get("Retry-After", 60))
+            except (ValueError, TypeError):
+                self.retry_after = 60
         base_msg = message or "Rate limit exhausted"
         retry_info = f"(Retry after {self.retry_after} seconds.)" \
             if self.retry_after is not None else "(Retry after unknown delay.)"

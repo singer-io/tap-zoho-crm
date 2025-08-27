@@ -15,7 +15,7 @@ default_config = {
     "base_url": "https://api.example.com",
     "request_timeout": 30,
     "client_id": "dummy_id",
-    "client_secret": "dummy_id",
+    "client_secret": "dummy_secret",
     "version": "dummy-version",
     "refresh_token": "dummy_token",
     "user_agent": "test-account <test-email>"

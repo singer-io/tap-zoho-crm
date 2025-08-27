@@ -41,6 +41,16 @@ def raise_for_error(response: requests.Response) -> None:
                 f"Skipping stream: The OAuth token does not have the required scope to access the stream."
             )
             return
+        elif response.status_code == 400 and error_code.upper() == 'FEATURE_NOT_ENABLED':
+            LOGGER.info(
+                f"Skipping stream: The Stream is not available for sync with the current account scope."
+            )
+            return
+        elif response.status_code == 400 and error_code.upper() == 'NO_PERMISSION':
+            LOGGER.info(
+                f"Skipping stream: The Stream is not available for sync, permission denied to access the module."
+            )
+            return
         else:
             if error_status.lower() == "error":
                 message = f"HTTP-error-code: {response.status_code}, Response-error-code: {error_code} Error: {error_text}"

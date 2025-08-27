@@ -13,6 +13,7 @@ from singer import (
 )
 
 LOGGER = get_logger()
+FIELD_BATCH_SIZE = 50
 
 
 class BaseStream(ABC):
@@ -129,7 +130,10 @@ class BaseStream(ABC):
         if "id" not in field_names:
             field_names.insert(0, "id")
 
-        batched_fields = [field_names[item:item + 50] for item in range(0, len(field_names), 50)]
+        batched_fields = [
+            field_names[item:item + FIELD_BATCH_SIZE]
+            for item in range(0, len(field_names), FIELD_BATCH_SIZE)
+            ]
         next_page = 1
 
         while next_page:

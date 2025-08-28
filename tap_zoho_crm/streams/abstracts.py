@@ -244,7 +244,7 @@ class IncrementalStream(BaseStream):
 
         current_bookmark = get_bookmark(state, stream, key or self.replication_keys[0], self.client.config["start_date"])
         value = max(current_bookmark, value)
-        state["bookmarks"][stream] = { "replication_key": self.client.config["start_date"]}
+        state["bookmarks"][stream] = { "replication_field": self.client.config["start_date"]}
         return state
 
 

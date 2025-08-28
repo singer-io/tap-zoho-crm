@@ -143,6 +143,8 @@ def field_to_property_schema(field: Dict) -> Dict:
     to a JSON schema property definition compatible with Singer. The mapping logic
     covers a variety of Zoho CRM field types and their expected JSON representations.
 
+    Allowing additionalProperties is required to support the flexible data model of Zoho CRM.
+
     Parameters:
         field (Dict): A dictionary containing Zoho CRM field metadata, including
             at least the keys "data_type" and "json_type".

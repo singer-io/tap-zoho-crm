@@ -14,7 +14,10 @@ LOGGER = singer.get_logger()
 PK_OVERRIDES = {}
 FORCED_FULL_TABLE = {}
 REPLICATION_KEY_CANDIDATES = ["Modified_Time", "CreatedDate"]
+# List of Zoho CRM modules which are not present in metadata module list but still
+# have field metadata available.
 FIELD_METADATA_ONLY_MODULES = []
+DISPLAY_TYPE_HIDDEN = 3
 
 
 def get_abs_path(path: str) -> str:
@@ -88,6 +91,8 @@ def get_static_schemas() -> Tuple[Dict, Dict]:
 def should_include_field(field: Dict, expected_pk_field: str) -> bool:
     """
     Determine whether a Zoho CRM field should be included in the schema.
+    These criteria are based on Zoho CRM field properties to ensure only relevant,
+    user-visible, and non-virtual fields are included in the schema.
     """
     api_name = field.get("api_name")
 
@@ -99,7 +104,7 @@ def should_include_field(field: Dict, expected_pk_field: str) -> bool:
         and field.get("visible", False)
         and field.get("view_type", {}).get("view", False)
         and not field.get("virtual_field", False)
-        and field.get("display_type", -1) != 3
+        and field.get("display_type", -1) != DISPLAY_TYPE_HIDDEN
     )
 
 
@@ -134,6 +139,16 @@ def get_replication_and_primary_key(
 def field_to_property_schema(field: Dict) -> Dict:
     """
     Convert a Zoho CRM field metadata dict to a Singer-compatible property schema.
+    This function maps Zoho CRM field metadata (primarily `data_type` and `json_type`)  
+    to a JSON schema property definition compatible with Singer. The mapping logic  
+    covers a variety of Zoho CRM field types and their expected JSON representations. 
+
+    Parameters:  
+        field (Dict): A dictionary containing Zoho CRM field metadata, including  
+            at least the keys "data_type" and "json_type".  
+
+    Returns:  
+        Dict: A JSON schema property definition for the field.  
     """
     json_type = field.get("json_type")
     data_type = field.get("data_type")
@@ -250,7 +265,7 @@ def get_dynamic_schema(client: Client) -> Tuple[Dict, Dict]:
     return schemas, field_metadata
 
 
-def get_dynamic_metadata(client:Client, module:Optional[str] = None) -> Optional[Mapping[Any, Any]]:
+def get_dynamic_metadata(client: Client, module: Optional[str] = None) -> Optional[Mapping[Any, Any]]:
     """
     Fetch dynamic metadata from the Zoho CRM API.
     """

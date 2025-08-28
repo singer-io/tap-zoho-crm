@@ -29,10 +29,20 @@ This document provides guidance for implementing a high-quality Singer Tap (or T
 - For recoverable errors, implement retries with exponential backoff (e.g., using the `backoff` library).
 :contentReference[oaicite:4]{index=4}
 
-### JSON Schema Guidelines
+## 5. Module Structure
+- Organize code in a proper module (folder) with `__init__.py`, not a single script file.
+:contentReference[oaicite:5]{index=5}
 
+## 6. Schema Management
+- For static schemas, store them as `.json` files in a `schemas/` directory—not as code-defined dicts.
+- Prefer explicit schemas: avoid `additionalProperties: true` or vague typing. Use explicit field names and types, and set `additionalProperties: false` when the schema should be strict.
+- Be cautious when tightening schemas in new releases—this may require a major version bump per semantic versioning.
+:contentReference[oaicite:6]{index=6}
+
+## 7. JSON Schema Guidelines
 - All files under `schema/*.json` must follow the [JSON Schema standard](https://json-schema.org/).
 - Any fields named `created_time`, `modified_time`, or ending in `_time` **must use the `date-time` format**.
+- additional_properties field should not include in root level, it can be allowed in nested fields but not in object level.
 
   Example:
   ```json
@@ -49,18 +59,29 @@ This document provides guidance for implementing a high-quality Singer Tap (or T
       }
     }
   }
+  ```
+:contentReference[oaicite:7]{index=7}
 
-## 5. Module Structure
-- Organize code in a proper module (folder) with `__init__.py`, not a single script file.
-:contentReference[oaicite:5]{index=5}
+## 8. Validating Bookmarking
+We use the singer.bookmarks module to read from and write to the bookmark state file. To ensure correctness, always validate the structure of the bookmark state file before processing or committing any changes.
+- In abstract.py file we are using get_bookmark and write_bookmark function to update the bookmark content for the streams.
+- We can use write_bookmark which is overridding the singers.io bookmarking module functon.
+- We use [singer.bookmarks](https://github.com/singer-io/singer-python/blob/master/singer/bookmarks.py) to read, write, and validate bookmark values.
 
-## 6. Schema Management
-- For static schemas, store them as `.json` files in a `schemas/` directory—not as code-defined dicts.
-- Prefer explicit schemas: avoid `additionalProperties: true` or vague typing. Use explicit field names and types, and set `additionalProperties: false` when the schema should be strict.
-- Be cautious when tightening schemas in new releases—this may require a major version bump per semantic versioning.
-:contentReference[oaicite:6]{index=6}
+  Format Requirements:
+  ```
+  {
+    "bookmarks": {
+      "stream_name": {
+        "replication_key": "2024-01-01T00:00:00Z"
+      }
+    }
+  }
+  ```
+  :contentReference[oaicite:8]{index=8}
 
-## 7. Code Quality
+
+## 9. Code Quality
 - Use `pylint` and aim for zero error-level messages.
 - Assume that CI (e.g., CircleCI) will enforce linting. Fix or explicitly disable messages as needed.
-:contentReference[oaicite:7]{index=7}
+:contentReference[oaicite:9]{index=9}

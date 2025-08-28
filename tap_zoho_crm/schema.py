@@ -139,16 +139,16 @@ def get_replication_and_primary_key(
 def field_to_property_schema(field: Dict) -> Dict:
     """
     Convert a Zoho CRM field metadata dict to a Singer-compatible property schema.
-    This function maps Zoho CRM field metadata (primarily `data_type` and `json_type`)  
-    to a JSON schema property definition compatible with Singer. The mapping logic  
-    covers a variety of Zoho CRM field types and their expected JSON representations. 
+    This function maps Zoho CRM field metadata (primarily `data_type` and `json_type`)
+    to a JSON schema property definition compatible with Singer. The mapping logic
+    covers a variety of Zoho CRM field types and their expected JSON representations.
 
-    Parameters:  
-        field (Dict): A dictionary containing Zoho CRM field metadata, including  
-            at least the keys "data_type" and "json_type".  
+    Parameters:
+        field (Dict): A dictionary containing Zoho CRM field metadata, including
+            at least the keys "data_type" and "json_type".
 
-    Returns:  
-        Dict: A JSON schema property definition for the field.  
+    Returns:
+        Dict: A JSON schema property definition for the field.
     """
     json_type = field.get("json_type")
     data_type = field.get("data_type")

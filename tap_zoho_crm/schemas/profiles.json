@@ -11,15 +11,13 @@
             "type": [
                 "null",
                 "string"
-            ],
-            "format": "date-time"
+            ]
         },
         "modified_time": {
             "type": [
                 "null",
                 "string"
-            ],
-            "format": "date-time"
+            ]
         },
         "api_name": {
             "type": [

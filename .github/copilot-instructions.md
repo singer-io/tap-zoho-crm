@@ -42,7 +42,7 @@ This document provides guidance for implementing a high-quality Singer Tap (or T
 ## 7. JSON Schema Guidelines
 - All files under `schema/*.json` must follow the [JSON Schema standard](https://json-schema.org/).
 - Any fields named `created_time`, `modified_time`, or ending in `_time` **must use the `date-time` format**.
-- additional_properties field should not include in root level, it can be allowed in nested fields but not in object level.
+- The `additional_properties` field should not be included at the root level; it can be allowed in nested fields but not at the object level.
 
   Example:
   ```json
@@ -65,7 +65,7 @@ This document provides guidance for implementing a high-quality Singer Tap (or T
 ## 8. Validating Bookmarking
 We use the singer.bookmarks module to read from and write to the bookmark state file. To ensure correctness, always validate the structure of the bookmark state file before processing or committing any changes.
 - In abstract.py file we are using get_bookmark and write_bookmark function to update the bookmark content for the streams.
-- We can use write_bookmark which is overridding the singers.io bookmarking module functon.
+- We can use write_bookmark which is overriding the singers.io bookmarking module function.
 - We use [singer.bookmarks](https://github.com/singer-io/singer-python/blob/master/singer/bookmarks.py) to read, write, and validate bookmark values.
 
   Format Requirements:

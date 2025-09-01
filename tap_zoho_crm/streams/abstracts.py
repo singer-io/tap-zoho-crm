@@ -269,7 +269,8 @@ class IncrementalStream(BaseStream):
                     record, self.schema, self.metadata
                 )
 
-                record_bookmark = transformed_record.get(self.replication_keys[0])
+                record_bookmark = transformed_record.get(self.replication_keys[0]) \
+                    if self.replication_keys else None
                 if record_bookmark is None:
                     record_bookmark = bookmark_date
 

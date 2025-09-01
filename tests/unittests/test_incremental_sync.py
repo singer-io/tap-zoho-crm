@@ -37,22 +37,22 @@ class TestSync(unittest.TestCase):
         """Verifies that the bookmark is updated when the new value is
         greater than the old one."""
 
-        state = {'bookmarks': {'stream_1': {'updated_at': 100}}}
-        result = self.stream.write_bookmark(state, "stream_1", "updated_at", 200)
-        self.assertEqual(result, {'bookmarks': {'stream_1': {'updated_at': 200}}})
+        state = {'bookmarks': {'test_stream': {'updated_at': 100}}}
+        result = self.stream.write_bookmark(state, "test_stream", "updated_at", 200)
+        self.assertEqual(result, {'bookmarks': {'test_stream': {'updated_at': 200}}})
 
     @patch("tap_zoho_crm.streams.abstracts.get_bookmark", return_value=100)
     def test_write_bookmark_without_state(self, mock_get_bookmark):
         """Verifies that the bookmark structure is created and the value is set."""
         state = {}
-        result = self.stream.write_bookmark(state, "stream_1", "updated_at", 200)
-        self.assertEqual(result, {'bookmarks': {'stream_1': {'updated_at': 200}}})
+        result = self.stream.write_bookmark(state, "test_stream", "updated_at", 200)
+        self.assertEqual(result, {'bookmarks': {'test_stream': {'updated_at': 200}}})
 
     @patch("tap_zoho_crm.streams.abstracts.get_bookmark", return_value=300)
     def test_write_bookmark_with_old_value(self, mock_get_bookmark):
         """Test that a bookmark is not updated if the new value is
         less than or equal to the existing bookmark value."""
-        state = {'bookmarks': {'stream_1': {'updated_at': 300}}}
-        result = self.stream.write_bookmark(state, "stream_1", "updated_at", 200)
-        self.assertEqual(result, {'bookmarks': {'stream_1': {'updated_at': 300}}})
+        state = {'bookmarks': {'test_stream': {'updated_at': 300}}}
+        result = self.stream.write_bookmark(state, "test_stream", "updated_at", 200)
+        self.assertEqual(result, {'bookmarks': {'test_stream': {'updated_at': 300}}})
 

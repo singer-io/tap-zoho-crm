@@ -99,14 +99,14 @@ class TestSync(unittest.TestCase):
 
         stream_instance = build_dynamic_stream(mock_client, catalog_entry)
 
-        assert isinstance(stream_instance, FullTableStream)
-        assert stream_instance.tap_stream_id == "accounts"
-        assert stream_instance.key_properties == ["id"]
-        assert stream_instance.replication_method == "FULL_TABLE"
-        assert stream_instance.replication_keys == ["id"]
-        assert stream_instance.path == "accounts"
-        assert stream_instance.data_key == "data"
-        assert stream_instance.is_dynamic is True
+        self.assertIsInstance(stream_instance, FullTableStream)
+        self.assertEqual(stream_instance.tap_stream_id, "accounts")
+        self.assertEqual(stream_instance.key_properties, ["id"])
+        self.assertEqual(stream_instance.replication_method, "FULL_TABLE")
+        self.assertEqual(stream_instance.replication_keys, ["id"])
+        self.assertEqual(stream_instance.path, "accounts")
+        self.assertEqual(stream_instance.data_key, "data")
+        self.assertTrue(stream_instance.is_dynamic)
 
     @patch("tap_zoho_crm.sync.metadata.to_map")
     def test_build_dynamic_stream_incremental(self, mock_to_map):
@@ -128,8 +128,8 @@ class TestSync(unittest.TestCase):
 
         stream_instance = build_dynamic_stream(mock_client, catalog_entry)
 
-        assert isinstance(stream_instance, IncrementalStream)
-        assert stream_instance.tap_stream_id == "contacts"
-        assert stream_instance.replication_method == "INCREMENTAL"
-        assert stream_instance.replication_keys == ["updated_at"]
+        self.assertIsInstance(stream_instance, IncrementalStream)
+        self.assertEqual(stream_instance.tap_stream_id, "contacts")
+        self.assertEqual(stream_instance.replication_method, "INCREMENTAL")
+        self.assertEqual(stream_instance.replication_keys, ["updated_at"])
 

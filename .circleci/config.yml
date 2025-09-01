@@ -28,8 +28,8 @@ jobs:
           name: "Unit Tests"
           command: |
             source /usr/local/share/virtualenvs/tap-zoho-crm/bin/activate
-            pip install pytest pytest-cov
-            pytest --cov=tap_zoho_crm --cov-report=html:htmlcov --cov-config=.coveragerc tests/unittests
+            pip install coverage
+            coverage run -m pytest tests/unittests
             coverage html
       - store_test_results:
           path: test_output/report.xml

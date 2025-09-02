@@ -71,6 +71,7 @@ def wait_if_retry_after(details):
     """
     exc = details['exception']
     if hasattr(exc, 'retry_after') and exc.retry_after is not None:
+        LOGGER.warning(f"Rate limited. Retrying in {exc.retry_after} seconds...")
         time.sleep(exc.retry_after)
 
 class Client:

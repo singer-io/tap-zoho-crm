@@ -188,18 +188,26 @@ class Client:
         )
 
     @backoff.on_exception(
-        wait_gen=lambda: backoff.expo(factor=2),
-        on_backoff=wait_if_retry_after,
+        wait_gen=backoff.expo,
         exception=(
             ConnectionResetError,
             ConnectionError,
             ChunkedEncodingError,
             Timeout,
-            ZohoCRMRateLimitError,
             ZohoCRMInternalServerError,
             ZohoCRMServiceUnavailableError
         ),
-        max_tries=5
+        max_tries=5,
+        factor=2
+    )
+    @backoff.on_exception(
+        wait_gen=backoff.expo,
+        on_backoff=wait_if_retry_after,
+        exception=(
+            ZohoCRMRateLimitError,
+        ),
+        max_tries=5,
+        factor=2
     )
     def __make_request(
         self, method: str, endpoint: str, **kwargs

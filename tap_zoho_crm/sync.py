@@ -61,7 +61,10 @@ def build_dynamic_stream(client, catalog_entry: singer.CatalogEntry) -> object:
         (base_class,),
         class_props
     )
-    return DynamicStreamClass(client, catalog_entry) # pylint: disable=abstract-class-instantiated
+    # pylint: disable=abstract-class-instantiated
+    # This is safe because DynamicStreamClass is created at runtime with all required abstract methods
+    # implemented via the selected base class (IncrementalStream or FullTableStream) and class_props.
+    return DynamicStreamClass(client, catalog_entry)
 
 
 def deselect_unselected_fields(catalog_entry):

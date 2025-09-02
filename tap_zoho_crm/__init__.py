@@ -1,6 +1,5 @@
 import sys
 import json
-from typing import Dict
 import singer
 from tap_zoho_crm.client import Client
 from tap_zoho_crm.discover import discover

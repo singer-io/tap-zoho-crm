@@ -32,37 +32,41 @@ def raise_for_error(response: requests.Response) -> None:
         response_json = response.json()
     except Exception:
         response_json = {}
-    if response.status_code not in [200, 201, 204]:
-        error_code = response_json.get("code", "")
-        error_text = response_json.get("message", "")
-        error_status = response_json.get("status", "")
-        if response.status_code == 401 and error_code.upper() == 'OAUTH_SCOPE_MISMATCH':
-            LOGGER.info(
-                f"Skipping stream: The OAuth token does not have the required scope to access the stream."
-            )
-            return
-        elif response.status_code == 400 and error_code.upper() == 'FEATURE_NOT_ENABLED':
-            LOGGER.info(
-                f"Skipping stream: The Stream is not available for sync with the current account scope."
-            )
-            return
-        elif response.status_code == 400 and error_code.upper() == 'NO_PERMISSION':
-            LOGGER.info(
-                f"Skipping stream: The Stream is not available for sync, permission denied to access the module."
-            )
-            return
-        else:
-            if error_status.lower() == "error":
-                message = f"HTTP-error-code: {response.status_code}, Response-error-code: {error_code} Error: {error_text}"
-            else:
-                error_message = ERROR_CODE_EXCEPTION_MAPPING.get(
-                    response.status_code, {}
-                ).get("message", "Unknown Error")
-                message = f"HTTP-error-code: {response.status_code}, Error: {response_json.get('message', error_message)}"
-            exc = ERROR_CODE_EXCEPTION_MAPPING.get(response.status_code, {}).get(
-                "raise_exception", ZohoCRMError
-            )
-            raise exc(message, response) from None
+
+    if response.status_code in [200, 201, 204]:
+        return
+
+    error_code = response_json.get("code", "").upper()
+    error_text = response_json.get("message", "")
+    error_status = response_json.get("status", "").lower()
+
+    SKIPPABLE_ERRORS = {
+        (401, "OAUTH_SCOPE_MISMATCH"): "The OAuth token does not have the required scope to access the stream.",
+        (400, "FEATURE_NOT_ENABLED"): "The stream is not available for sync with the current account scope.",
+        (400, "NO_PERMISSION"): "The stream is not available for sync; permission denied to access the module.",
+    }
+
+    if (response.status_code, error_code) in SKIPPABLE_ERRORS:
+        LOGGER.info(f"Skipping stream: {SKIPPABLE_ERRORS[(response.status_code, error_code)]}")
+        return
+
+    if error_status == "error":
+        message = (
+            f"HTTP-error-code: {response.status_code}, "
+            f"Response-error-code: {error_code}, "
+            f"Error: {error_text}"
+        )
+    else:
+        default_msg = ERROR_CODE_EXCEPTION_MAPPING.get(
+            response.status_code, {}
+        ).get("message", "Unknown Error")
+        message = f"HTTP-error-code: {response.status_code}, Error: {error_text or default_msg}"
+
+    exception_class = ERROR_CODE_EXCEPTION_MAPPING.get(
+        response.status_code, {}
+    ).get("raise_exception", ZohoCRMError)
+
+    raise exception_class(message, response) from None
 
 
 def wait_if_retry_after(details):
@@ -201,13 +205,13 @@ class Client:
         factor=2
     )
     @backoff.on_exception(
-        wait_gen=backoff.expo,
+        wait_gen=backoff.constant,
         on_backoff=wait_if_retry_after,
         exception=(
             ZohoCRMRateLimitError,
         ),
-        max_tries=5,
-        factor=2
+        max_tries=3,
+        interval=1
     )
     def __make_request(
         self, method: str, endpoint: str, **kwargs
@@ -224,6 +228,8 @@ class Client:
                 raise ValueError(f"Unsupported method: {method}")
 
         if response.status_code == 204:
+            # HTTP 204 No Content: no response body is returned.
+            # Return an empty dictionary to maintain consistent response structure.
             return {}
 
         return response.json()

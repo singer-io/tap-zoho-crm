@@ -38,7 +38,23 @@ class ZohoCRMUnprocessableEntityError(ZohoCRMBackoffError):
 
 class ZohoCRMRateLimitError(ZohoCRMBackoffError):
     """class representing 429 status code."""
-    pass
+    def __init__(self, message=None, response=None):
+        """Initialize the ZohoCRMRateLimitError. Parses the 'retry_in_seconds'  from the response (if present) and sets the
+            `retry_after` attribute accordingly.
+        """
+        self.response = response
+        self.retry_after = None
+
+        if response is not None:
+            try:
+                self.retry_after = int(response.headers.get("Retry-After", 60))
+            except (ValueError, TypeError):
+                self.retry_after = 60
+        base_msg = message or "Rate limit exhausted"
+        retry_info = f"(Retry after {self.retry_after} seconds.)" \
+            if self.retry_after is not None else "(Retry after unknown delay.)"
+        full_message = f"{base_msg} {retry_info}"
+        super().__init__(full_message, response=response)
 
 class ZohoCRMInternalServerError(ZohoCRMBackoffError):
     """class representing 500 status code."""

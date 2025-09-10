@@ -1,0 +1,476 @@
+{
+    "type": "object",
+    "properties": {
+        "country": {
+            "type": [
+                "null",
+                "string"
+            ]
+        },
+        "name_format__s": {
+            "type": [
+                "null",
+                "string"
+            ]
+        },
+        "language": {
+            "type": [
+                "null",
+                "string"
+            ]
+        },
+        "microsoft": {
+            "type": [
+                "null",
+                "boolean"
+            ]
+        },
+        "$shift_effective_from": {
+            "type": [
+                "null",
+                "string"
+            ],
+            "format": "date-time"
+        },
+        "Currency": {
+            "type": [
+                "null",
+                "string"
+            ]
+        },
+        "id": {
+            "type": [
+                "null",
+                "string"
+            ]
+        },
+        "state": {
+            "type": [
+                "null",
+                "string"
+            ]
+        },
+        "fax": {
+            "type": [
+                "null",
+                "string"
+            ]
+        },
+        "country_locale": {
+            "type": [
+                "null",
+                "string"
+            ]
+        },
+        "sandboxDeveloper": {
+            "type": [
+                "null",
+                "boolean"
+            ]
+        },
+        "zip": {
+            "type": [
+                "null",
+                "string"
+            ]
+        },
+        "decimal_separator": {
+            "type": [
+                "null",
+                "string"
+            ]
+        },
+        "created_time": {
+            "type": [
+                "null",
+                "string"
+            ],
+            "format": "date-time"
+        },
+        "time_format": {
+            "type": [
+                "null",
+                "string"
+            ]
+        },
+        "offset": {
+            "type": [
+                "null",
+                "integer"
+            ]
+        },
+        "profile": {
+            "type": [
+                "null",
+                "object"
+            ],
+            "properties": {
+                "name": {
+                    "type": [
+                        "null",
+                        "string"
+                    ]
+                },
+                "id": {
+                    "type": [
+                        "null",
+                        "string"
+                    ]
+                }
+            }
+        },
+        "created_by": {
+            "type": [
+                "null",
+                "object"
+            ],
+            "properties": {
+                "name": {
+                    "type": [
+                        "null",
+                        "string"
+                    ]
+                },
+                "id": {
+                    "type": [
+                        "null",
+                        "string"
+                    ]
+                }
+            }
+        },
+        "zuid": {
+            "type": [
+                "null",
+                "string"
+            ]
+        },
+        "full_name": {
+            "type": [
+                "null",
+                "string"
+            ]
+        },
+        "phone": {
+            "type": [
+                "null",
+                "string"
+            ]
+        },
+        "dob": {
+            "type": [
+                "null",
+                "string"
+            ],
+            "format": "date-time"
+        },
+        "sort_order_preference__s": {
+            "type": [
+                "null",
+                "string"
+            ]
+        },
+        "status": {
+            "type": [
+                "null",
+                "string"
+            ]
+        },
+        "type__s": {
+            "type": [
+                "null",
+                "string"
+            ]
+        },
+        "role": {
+            "type": [
+                "null",
+                "object"
+            ],
+            "properties": {
+                "name": {
+                    "type": [
+                        "null",
+                        "string"
+                    ]
+                },
+                "id": {
+                    "type": [
+                        "null",
+                        "string"
+                    ]
+                }
+            }
+        },
+        "customize_info": {
+            "type": [
+                "null",
+                "object"
+            ],
+            "properties": {
+                "notes_desc": {
+                    "type": [
+                        "null",
+                        "string"
+                    ]
+                },
+                "show_right_panel": {
+                    "type": [
+                        "null",
+                        "boolean"
+                    ]
+                },
+                "bc_view": {
+                    "type": [
+                        "null",
+                        "string"
+                    ]
+                },
+                "show_home": {
+                    "type": [
+                        "null",
+                        "boolean"
+                    ]
+                },
+                "show_detail_view": {
+                    "type": [
+                        "null",
+                        "boolean"
+                    ]
+                },
+                "show_left_panel": {
+                    "type": [
+                        "null",
+                        "boolean"
+                    ]
+                },
+                "unpin_recent_item": {
+                    "type": [
+                        "null",
+                        "boolean"
+                    ]
+                }
+            }
+        },
+        "city": {
+            "type": [
+                "null",
+                "string"
+            ]
+        },
+        "signature": {
+            "type": [
+                "null",
+                "string"
+            ]
+        },
+        "locale": {
+            "type": [
+                "null",
+                "string"
+            ]
+        },
+        "personal_account": {
+            "type": [
+                "null",
+                "boolean"
+            ]
+        },
+        "Isonline": {
+            "type": [
+                "null",
+                "boolean"
+            ]
+        },
+        "default_tab_group": {
+            "type": [
+                "null",
+                "string"
+            ]
+        },
+        "Modified_By": {
+            "type": [
+                "null",
+                "object"
+            ],
+            "properties": {
+                "name": {
+                    "type": [
+                        "null",
+                        "string"
+                    ]
+                },
+                "id": {
+                    "type": [
+                        "null",
+                        "string"
+                    ]
+                }
+            }
+        },
+        "street": {
+            "type": [
+                "null",
+                "string"
+            ]
+        },
+        "$current_shift": {
+            "type": [
+                "null",
+                "string"
+            ]
+        },
+        "alias": {
+            "type": [
+                "null",
+                "string"
+            ]
+        },
+        "theme": {
+            "type": [
+                "null",
+                "object"
+            ],
+            "properties": {
+                "normal_tab": {
+                    "type": [
+                        "null",
+                        "object"
+                    ],
+                    "properties": {
+                        "font_color": {
+                            "type": [
+                                "null",
+                                "string"
+                            ]
+                        },
+                        "background": {
+                            "type": [
+                                "null",
+                                "string"
+                            ]
+                        }
+                    }
+                },
+                "selected_tab": {
+                    "type": [
+                        "null",
+                        "object"
+                    ],
+                    "properties": {
+                        "font_color": {
+                            "type": [
+                                "null",
+                                "string"
+                            ]
+                        },
+                        "background": {
+                            "type": [
+                                "null",
+                                "string"
+                            ]
+                        }
+                    }
+                },
+                "new_background": {
+                    "type": [
+                        "null",
+                        "string"
+                    ]
+                },
+                "background": {
+                    "type": [
+                        "null",
+                        "string"
+                    ]
+                },
+                "screen": {
+                    "type": [
+                        "null",
+                        "string"
+                    ]
+                },
+                "type": {
+                    "type": [
+                        "null",
+                        "string"
+                    ]
+                }
+            }
+        },
+        "first_name": {
+            "type": [
+                "null",
+                "string"
+            ]
+        },
+        "email": {
+            "type": [
+                "null",
+                "string"
+            ],
+            "format": "email"
+        },
+        "status_reason__s": {
+            "type": [
+                "null",
+                "string"
+            ]
+        },
+        "website": {
+            "type": [
+                "null",
+                "string"
+            ]
+        },
+        "Modified_Time": {
+            "type": [
+                "null",
+                "string"
+            ],
+            "format": "date-time"
+        },
+        "$next_shift": {
+            "type": [
+                "null",
+                "string"
+            ]
+        },
+        "mobile": {
+            "type": [
+                "null",
+                "string"
+            ]
+        },
+        "last_name": {
+            "type": [
+                "null",
+                "string"
+            ]
+        },
+        "time_zone": {
+            "type": [
+                "null",
+                "string"
+            ]
+        },
+        "number_separator": {
+            "type": [
+                "null",
+                "string"
+            ]
+        },
+        "confirm": {
+            "type": [
+                "null",
+                "boolean"
+            ]
+        },
+        "date_format": {
+            "type": [
+                "null",
+                "string"
+            ]
+        }
+    }
+}

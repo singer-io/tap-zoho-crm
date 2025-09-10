@@ -7,4 +7,5 @@ class Roles(IncrementalStream):
     replication_keys = ["modified_time__s"]
     data_key = "roles"
     path = "settings/roles"
+    pagination_supported = False
 

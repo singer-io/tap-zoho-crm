@@ -1,1 +1,133 @@
-{}
+{
+    "type": "object",
+    "properties": {
+        "symbol": {
+            "type": [
+                "null",
+                "string"
+            ]
+        },
+        "created_time": {
+            "type": [
+                "null",
+                "string"
+            ],
+            "format": "date-time"
+        },
+        "is_active": {
+            "type": [
+                "null",
+                "boolean"
+            ]
+        },
+        "exchange_rate": {
+            "type": [
+                "null",
+                "string"
+            ]
+        },
+        "format": {
+            "type": [
+                "null",
+                "object"
+            ],
+            "properties": {
+                "decimal_separator": {
+                    "type": [
+                        "null",
+                        "string"
+                    ]
+                },
+                "thousand_separator": {
+                    "type": [
+                        "null",
+                        "string"
+                    ]
+                },
+                "decimal_places": {
+                    "type": [
+                        "null",
+                        "string"
+                    ]
+                }
+            }
+        },
+        "created_by": {
+            "type": [
+                "null",
+                "object"
+            ],
+            "properties": {
+                "name": {
+                    "type": [
+                        "null",
+                        "string"
+                    ]
+                },
+                "id": {
+                    "type": [
+                        "null",
+                        "string"
+                    ]
+                }
+            }
+        },
+        "prefix_symbol": {
+            "type": [
+                "null",
+                "boolean"
+            ]
+        },
+        "is_base": {
+            "type": [
+                "null",
+                "boolean"
+            ]
+        },
+        "modified_time": {
+            "type": [
+                "null",
+                "string"
+            ],
+            "format": "date-time"
+        },
+        "name": {
+            "type": [
+                "null",
+                "string"
+            ]
+        },
+        "modified_by": {
+            "type": [
+                "null",
+                "object"
+            ],
+            "properties": {
+                "name": {
+                    "type": [
+                        "null",
+                        "string"
+                    ]
+                },
+                "id": {
+                    "type": [
+                        "null",
+                        "string"
+                    ]
+                }
+            }
+        },
+        "id": {
+            "type": [
+                "null",
+                "string"
+            ]
+        },
+        "iso_code": {
+            "type": [
+                "null",
+                "string"
+            ]
+        }
+    }
+}

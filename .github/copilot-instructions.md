@@ -1,7 +1,5 @@
 # Instructions for Building a Singer Tap/Target
 
-*Following Singer.io Best Practices*
-
 This document provides guidance for implementing a high-quality Singer Tap (or Target) in compliance with the Singer specification and community best practices. Use it in conjunction with GitHub Copilot or your preferred IDE.
 
 ---
@@ -60,7 +58,7 @@ Prefer explicit schemas:
 ## 7. JSON Schema Guidelines
 
 - All files under schemas/*.json must follow the JSON Schema standard.
-- Any fields named created_time, modified_time, or ending in _time must use the date-time format.
+- Any fields named created_time, modified_time, ending in _time or ending in _date must use the date-time format.
 - Avoid using additionalProperties at the root level. It's allowed in nested fields only.
 
 Example:

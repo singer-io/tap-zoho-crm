@@ -15,6 +15,10 @@ class Zoho_CRMAllFields(AllFieldsTest, Zoho_CRMBaseTest):
         return "tap_tester_zoho_crm_all_fields_test"
 
     def streams_to_test(self):
-        streams_to_exclude = {}
+        # excluding dynamic schemas due to lack of test data
+        streams_to_exclude = {
+            'Appointments_Rescheduled_History__s',
+            'territories'
+        }
         return self.expected_stream_names().difference(streams_to_exclude)
 

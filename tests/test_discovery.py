@@ -11,5 +11,21 @@ class Zoho_CRMDiscoveryTest(DiscoveryTest, Zoho_CRMBaseTest):
         return "tap_tester_zoho_crm_discovery_test"
 
     def streams_to_test(self):
-        return self.expected_stream_names()
+        # excluding dynamic schemas
+        streams_to_exclude = {
+            "Leads",
+            "Accounts",
+            "Calls",
+            "Tasks",
+            "Campaigns",
+            "Deals",
+            "Notes",
+            "Calls",
+            "DealHistory",
+            "Attachments",
+            "Contacts",
+            "Appointments_Rescheduled_History__s",
+            "Events"
+        }
+        return self.expected_stream_names().difference(streams_to_exclude)
 

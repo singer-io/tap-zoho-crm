@@ -22,7 +22,7 @@ class Zoho_CRMBaseTest(BaseCase):
     @staticmethod
     def tap_name():
         """The name of the tap."""
-        return "tap-zoho_crm"
+        return "tap-zoho-crm"
 
     @staticmethod
     def get_type():
@@ -33,13 +33,6 @@ class Zoho_CRMBaseTest(BaseCase):
     def expected_metadata(cls):
         """The expected streams and metadata about the streams."""
         return {
-            "appointments": {
-                cls.PRIMARY_KEYS: { "id" },
-                cls.REPLICATION_METHOD: cls.INCREMENTAL,
-                cls.REPLICATION_KEYS: { "Modified_Time" },
-                cls.OBEYS_START_DATE: False,
-                cls.API_LIMIT: 200
-            },
             "currencies": {
                 cls.PRIMARY_KEYS: { "id" },
                 cls.REPLICATION_METHOD: cls.INCREMENTAL,
@@ -68,13 +61,6 @@ class Zoho_CRMBaseTest(BaseCase):
                 cls.OBEYS_START_DATE: False,
                 cls.API_LIMIT: 200
             },
-            "services": {
-                cls.PRIMARY_KEYS: { "id" },
-                cls.REPLICATION_METHOD: cls.INCREMENTAL,
-                cls.REPLICATION_KEYS: { "Modified_Time" },
-                cls.OBEYS_START_DATE: False,
-                cls.API_LIMIT: 200
-            },
             "territories": {
                 cls.PRIMARY_KEYS: { "id" },
                 cls.REPLICATION_METHOD: cls.INCREMENTAL,
@@ -88,6 +74,98 @@ class Zoho_CRMBaseTest(BaseCase):
                 cls.REPLICATION_KEYS: { "Modified_Time" },
                 cls.OBEYS_START_DATE: False,
                 cls.API_LIMIT: 200
+            },
+            # Dynamic Schemas for testing
+            "Leads": {
+                cls.PRIMARY_KEYS: { "id" },
+                cls.REPLICATION_METHOD: cls.INCREMENTAL,
+                cls.REPLICATION_KEYS: { "Modified_Time" },
+                cls.OBEYS_START_DATE: False,
+                cls.API_LIMIT: 200
+            },
+            "Accounts": {
+                cls.PRIMARY_KEYS: { "id" },
+                cls.REPLICATION_METHOD: cls.INCREMENTAL,
+                cls.REPLICATION_KEYS: { "Modified_Time" },
+                cls.OBEYS_START_DATE: False,
+                cls.API_LIMIT: 200
+            },
+            "Calls": {
+                cls.PRIMARY_KEYS: { "id" },
+                cls.REPLICATION_METHOD: cls.INCREMENTAL,
+                cls.REPLICATION_KEYS: { "Modified_Time" },
+                cls.OBEYS_START_DATE: False,
+                cls.API_LIMIT: 200
+            },
+            "Tasks": {
+                cls.PRIMARY_KEYS: { "id" },
+                cls.REPLICATION_METHOD: cls.INCREMENTAL,
+                cls.REPLICATION_KEYS: { "Modified_Time" },
+                cls.OBEYS_START_DATE: False,
+                cls.API_LIMIT: 200
+            },
+            "Campaigns": {
+                cls.PRIMARY_KEYS: { "id" },
+                cls.REPLICATION_METHOD: cls.INCREMENTAL,
+                cls.REPLICATION_KEYS: { "Modified_Time" },
+                cls.OBEYS_START_DATE: False,
+                cls.API_LIMIT: 200
+            },
+            "Deals": {
+                cls.PRIMARY_KEYS: { "id" },
+                cls.REPLICATION_METHOD: cls.INCREMENTAL,
+                cls.REPLICATION_KEYS: { "Modified_Time" },
+                cls.OBEYS_START_DATE: False,
+                cls.API_LIMIT: 200
+            },
+            "Notes": {
+                cls.PRIMARY_KEYS: { "id" },
+                cls.REPLICATION_METHOD: cls.INCREMENTAL,
+                cls.REPLICATION_KEYS: { "Modified_Time" },
+                cls.OBEYS_START_DATE: False,
+                cls.API_LIMIT: 200
+            },
+            "Calls": {
+                cls.PRIMARY_KEYS: { "id" },
+                cls.REPLICATION_METHOD: cls.INCREMENTAL,
+                cls.REPLICATION_KEYS: { "Modified_Time" },
+                cls.OBEYS_START_DATE: False,
+                cls.API_LIMIT: 200
+            },
+            "DealHistory": {
+                cls.PRIMARY_KEYS: { "id" },
+                cls.REPLICATION_METHOD: cls.INCREMENTAL,
+                cls.REPLICATION_KEYS: { "Modified_Time" },
+                cls.OBEYS_START_DATE: False,
+                cls.API_LIMIT: 200
+            },
+            "Attachments": {
+                cls.PRIMARY_KEYS: { "id" },
+                cls.REPLICATION_METHOD: cls.INCREMENTAL,
+                cls.REPLICATION_KEYS: { "Modified_Time" },
+                cls.OBEYS_START_DATE: False,
+                cls.API_LIMIT: 200
+            },
+            "Contacts": {
+                cls.PRIMARY_KEYS: { "id" },
+                cls.REPLICATION_METHOD: cls.INCREMENTAL,
+                cls.REPLICATION_KEYS: { "Modified_Time" },
+                cls.OBEYS_START_DATE: False,
+                cls.API_LIMIT: 200
+            },
+            "Appointments_Rescheduled_History__s": {
+                cls.PRIMARY_KEYS: { "id" },
+                cls.REPLICATION_METHOD: cls.INCREMENTAL,
+                cls.REPLICATION_KEYS: { "Modified_Time" },
+                cls.OBEYS_START_DATE: False,
+                cls.API_LIMIT: 200
+            },
+            "Events": {
+                cls.PRIMARY_KEYS: { "id" },
+                cls.REPLICATION_METHOD: cls.INCREMENTAL,
+                cls.REPLICATION_KEYS: { "Modified_Time" },
+                cls.OBEYS_START_DATE: False,
+                cls.API_LIMIT: 200
             }
         }
 
@@ -95,7 +173,13 @@ class Zoho_CRMBaseTest(BaseCase):
     def get_credentials():
         """Authentication information for the test account."""
         credentials_dict = {}
-        creds = {'client_id': 'TAP_ZOHO_CRM_CLIENT_ID', 'client_secret': 'TAP_ZOHO_CRM_CLIENT_SECRET', 'refresh_token': 'TAP_ZOHO_CRM_REFRESH_TOKEN'}
+        creds = {
+            'client_id': 'TAP_ZOHO_CRM_CLIENT_ID',
+            'client_secret': 'TAP_ZOHO_CRM_CLIENT_SECRET',
+            'refresh_token': 'TAP_ZOHO_CRM_REFRESH_TOKEN',
+            'api_version': 'TAP_ZOHO_CRM_API_VERSION',
+            'select_fields_by_default': 'TAP_ZOHO_CRM_SELECT_FIELDS_BY_DEFAULT' 
+        }
 
         for cred in creds:
             credentials_dict[cred] = os.getenv(creds[cred])

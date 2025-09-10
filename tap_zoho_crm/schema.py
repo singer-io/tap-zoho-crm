@@ -82,6 +82,10 @@ def get_static_schemas() -> Tuple[Dict, Dict]:
                     mdata, ("properties", field_name), "inclusion", "automatic"
                 )
 
+        parent_tap_stream_id = getattr(stream_obj, "parent", None)
+        if parent_tap_stream_id:
+            mdata = metadata.write(mdata, (), 'parent-tap-stream-id', parent_tap_stream_id)
+
         mdata = metadata.to_list(mdata)
         field_metadata[stream_name] = mdata
 
@@ -227,7 +231,6 @@ def get_dynamic_schema(client: Client) -> Tuple[Dict, Dict]:
         properties = dict()
         replication_key, pk_field = get_replication_and_primary_key(module, module_metadata)
 
-        # Modules would be skipped when they don't have an expected pk field
         if not pk_field:
             LOGGER.info(f"Skipping module {module}: No primary key field found.")
             continue

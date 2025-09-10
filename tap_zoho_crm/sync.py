@@ -1,7 +1,9 @@
-import singer
 from typing import Dict
-from tap_zoho_crm.streams import STREAMS
+import singer
+from singer import metadata
+from tap_zoho_crm.streams import STREAMS, abstracts
 from tap_zoho_crm.client import Client
+from tap_zoho_crm.streams.abstracts import IncrementalStream, FullTableStream
 
 LOGGER = singer.get_logger()
 
@@ -32,6 +34,54 @@ def write_schema(stream, client, streams_to_sync, catalog) -> None:
             stream.child_to_sync.append(child_obj)
 
 
+def build_dynamic_stream(client, catalog_entry: singer.CatalogEntry) -> object:
+    """Create a dynamic stream instance based on stream_catalog."""
+    catalog_metadata = metadata.to_map(catalog_entry.metadata)
+
+    stream_name = catalog_entry.stream
+    key_properties = catalog_entry.key_properties
+    replication_method = catalog_metadata.get((), {}).get('forced-replication-method')
+    replication_keys = catalog_metadata.get((), {}).get('valid-replication-keys')
+
+    class_props = {
+        "__module__": abstracts.__name__,
+        "tap_stream_id": property(lambda self: stream_name),
+        "key_properties": property(lambda self: key_properties),
+        "replication_method": property(lambda self: replication_method),
+        "replication_keys": property(lambda self: replication_keys),
+        "path": stream_name,
+        "data_key": "data",
+        "is_dynamic": True
+    }
+
+    base_class = IncrementalStream if replication_method.upper() == "INCREMENTAL" else FullTableStream
+
+    DynamicStreamClass = type(
+        f"Dynamic{stream_name.title()}Stream",
+        (base_class,),
+        class_props
+    )
+    # This is safe because DynamicStreamClass is created at runtime with all required abstract methods
+    # implemented via the selected base class (IncrementalStream or FullTableStream) and class_props.
+    return DynamicStreamClass(client, catalog_entry) # pylint: disable=abstract-class-instantiated
+
+
+def deselect_unselected_fields(catalog_entry):
+    """
+    If a field isn't manually deselected, it will be included in the sync by default,
+    so we must explicitly deselect any such fields in the catalog.
+    """
+    LOGGER.info("Deselecting unselected fields")
+    mdata = metadata.to_map(catalog_entry.metadata)
+
+    for breadcrumb, meta in mdata.items():
+        if breadcrumb and meta.get('selected') is None:
+            LOGGER.info("Deselecting field: %s", breadcrumb[-1])
+            meta['selected'] = False
+
+    catalog_entry.metadata = metadata.to_list(mdata)
+
+
 def sync(client: Client, config: Dict, catalog: singer.Catalog, state) -> None:
     """
     Sync selected streams from catalog
@@ -39,7 +89,11 @@ def sync(client: Client, config: Dict, catalog: singer.Catalog, state) -> None:
 
     streams_to_sync = []
     for stream in catalog.get_selected_streams(state):
+        catalog_entry = catalog.get_stream(stream.stream)
+        if config.get('select_fields_by_default') is False:
+            deselect_unselected_fields(catalog_entry)
         streams_to_sync.append(stream.stream)
+
     LOGGER.info("selected_streams: {}".format(streams_to_sync))
 
     last_stream = singer.get_currently_syncing(state)
@@ -47,11 +101,15 @@ def sync(client: Client, config: Dict, catalog: singer.Catalog, state) -> None:
 
     with singer.Transformer() as transformer:
         for stream_name in streams_to_sync:
+            if stream_name in STREAMS:
+                stream = STREAMS[stream_name](client, catalog.get_stream(stream_name))
+            else:
+                stream = build_dynamic_stream(client, catalog.get_stream(stream_name))
 
-            stream = STREAMS[stream_name](client, catalog.get_stream(stream_name))
-            if stream.parent:
-                if stream.parent not in streams_to_sync:
-                    streams_to_sync.append(stream.parent)
+            parent_name = getattr(stream, "parent", None)
+            if parent_name:
+                if parent_name not in streams_to_sync:
+                    streams_to_sync.append(parent_name)
                 continue
 
             write_schema(stream, client, streams_to_sync, catalog)

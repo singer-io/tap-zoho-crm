@@ -34,7 +34,7 @@ class TestSync(unittest.TestCase):
     @patch("tap_zoho_crm.streams.abstracts.ParentBaseStream.is_selected", return_value=True)
     @patch("tap_zoho_crm.streams.abstracts.ParentBaseStream.get_bookmark", return_value=100)
     def test_get_bookmark_parent_only_selected(self, mock_get_bookmark, mock_is_selected):
-
+        """Test case where only the parent stream is selected for syncing."""
         state = {}
         result = self.stream.get_bookmark(state, "parent_stream")
         mock_get_bookmark.assert_called_once_with(state, "parent_stream")
@@ -43,7 +43,7 @@ class TestSync(unittest.TestCase):
     @patch("tap_zoho_crm.streams.abstracts.BaseStream.is_selected", return_value=False)
     @patch("tap_zoho_crm.streams.abstracts.IncrementalStream.get_bookmark", return_value = 100)
     def test_get_bookmark_parent_only_but_not_selected(self, mock_get_bookmark, mock_is_selected):
-
+        """Test case where the parent stream is not selected."""
         state = {}
         result = self.stream.get_bookmark(state, "parent_stream")
         self.assertEqual(result, None)
@@ -51,7 +51,7 @@ class TestSync(unittest.TestCase):
     @patch("tap_zoho_crm.streams.abstracts.BaseStream.is_selected", return_value=True)
     @patch("tap_zoho_crm.streams.abstracts.IncrementalStream.get_bookmark", side_effect = [100, 50, 75])
     def test_get_bookmark_with_children(self, mock_get_bookmark, mock_is_selected):
-
+        """Test case where both parent and child streams are selected."""
         child1 = MagicMock()
         child1.tap_stream_id = "child_stream_1"
         child2 = MagicMock()
@@ -74,7 +74,7 @@ class TestSync(unittest.TestCase):
     @patch("tap_zoho_crm.streams.abstracts.BaseStream.is_selected", return_value=False)
     @patch("tap_zoho_crm.streams.abstracts.IncrementalStream.get_bookmark", side_effect = [75, 50])
     def test_get_bookmark_only_children_selected(self, mock_get_bookmark, mock_is_selected):
-
+        """Test case where only child streams are selected."""
         child1 = MagicMock()
         child1.tap_stream_id = "child_stream_1"
         child2 = MagicMock()

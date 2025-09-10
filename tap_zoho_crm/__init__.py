@@ -24,6 +24,7 @@ def do_discover(client: Client):
     catalog = discover(client=client)
     json.dump(catalog.to_dict(), sys.stdout, indent=2)
     LOGGER.info("Finished discover")
+    return catalog
 
 
 @singer.utils.handle_top_exception(LOGGER)
@@ -37,13 +38,15 @@ def main():
         state = parsed_args.state
 
     with Client(parsed_args.config) as client:
+        config = parsed_args.config
         if parsed_args.discover:
             do_discover(client=client)
         elif parsed_args.catalog:
+            catalog = parsed_args.catalog
             sync(
                 client=client,
-                config=parsed_args.config,
-                catalog=parsed_args.catalog,
+                config=config,
+                catalog=catalog,
                 state=state)
 
 

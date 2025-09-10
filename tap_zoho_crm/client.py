@@ -1,5 +1,6 @@
 from typing import Any, Dict, Mapping, Optional, Tuple
 from datetime import datetime, timedelta
+import time
 
 import backoff
 import requests
@@ -7,7 +8,13 @@ from requests import session
 from requests.exceptions import Timeout, ConnectionError, ChunkedEncodingError
 from singer import get_logger, metrics
 
-from tap_zoho_crm.exceptions import ERROR_CODE_EXCEPTION_MAPPING, ZohoCRMError, ZohoCRMBackoffError
+from tap_zoho_crm.exceptions import (
+    ERROR_CODE_EXCEPTION_MAPPING,
+    ZohoCRMError,
+    ZohoCRMRateLimitError,
+    ZohoCRMInternalServerError,
+    ZohoCRMServiceUnavailableError
+    )
 
 LOGGER = get_logger()
 REQUEST_TIMEOUT = 300
@@ -25,18 +32,51 @@ def raise_for_error(response: requests.Response) -> None:
         response_json = response.json()
     except Exception:
         response_json = {}
-    if response.status_code not in [200, 201, 204]:
-        if response_json.get("error"):
-            message = f"HTTP-error-code: {response.status_code}, Error: {response_json.get('error')}"
-        else:
-            error_message = ERROR_CODE_EXCEPTION_MAPPING.get(
-                response.status_code, {}
-            ).get("message", "Unknown Error")
-            message = f"HTTP-error-code: {response.status_code}, Error: {response_json.get('message', error_message)}"
-        exc = ERROR_CODE_EXCEPTION_MAPPING.get(response.status_code, {}).get(
-            "raise_exception", ZohoCRMError
+
+    if response.status_code in [200, 201, 204]:
+        return
+
+    error_code = response_json.get("code", "").upper()
+    error_text = response_json.get("message", "")
+    error_status = response_json.get("status", "").lower()
+
+    SKIPPABLE_ERRORS = {
+        (401, "OAUTH_SCOPE_MISMATCH"): "The OAuth token does not have the required scope to access the stream.",
+        (400, "FEATURE_NOT_ENABLED"): "The stream is not available for sync with the current account scope.",
+        (400, "NO_PERMISSION"): "The stream is not available for sync; permission denied to access the module.",
+    }
+
+    if (response.status_code, error_code) in SKIPPABLE_ERRORS:
+        LOGGER.info(f"Skipping stream: {SKIPPABLE_ERRORS[(response.status_code, error_code)]}")
+        return
+
+    if error_status == "error":
+        message = (
+            f"HTTP-error-code: {response.status_code}, "
+            f"Response-error-code: {error_code}, "
+            f"Error: {error_text}"
         )
-        raise exc(message, response) from None
+    else:
+        default_msg = ERROR_CODE_EXCEPTION_MAPPING.get(
+            response.status_code, {}
+        ).get("message", "Unknown Error")
+        message = f"HTTP-error-code: {response.status_code}, Error: {error_text or default_msg}"
+
+    exception_class = ERROR_CODE_EXCEPTION_MAPPING.get(
+        response.status_code, {}
+    ).get("raise_exception", ZohoCRMError)
+
+    raise exception_class(message, response) from None
+
+
+def wait_if_retry_after(details):
+    """Backoff handler that checks for a 'retry_after' attribute in the exception
+    and sleeps for the specified duration to respect API rate limits.
+    """
+    exc = details['exception']
+    if hasattr(exc, 'retry_after') and exc.retry_after is not None:
+        LOGGER.warning(f"Rate limited. Retrying in {exc.retry_after} seconds...")
+        time.sleep(exc.retry_after)
 
 class Client:
     """
@@ -158,10 +198,20 @@ class Client:
             ConnectionError,
             ChunkedEncodingError,
             Timeout,
-            ZohoCRMBackoffError
+            ZohoCRMInternalServerError,
+            ZohoCRMServiceUnavailableError
         ),
         max_tries=5,
-        factor=2,
+        factor=2
+    )
+    @backoff.on_exception(
+        wait_gen=backoff.constant,
+        on_backoff=wait_if_retry_after,
+        exception=(
+            ZohoCRMRateLimitError,
+        ),
+        max_tries=3,
+        interval=1
     )
     def __make_request(
         self, method: str, endpoint: str, **kwargs
@@ -177,8 +227,9 @@ class Client:
             else:
                 raise ValueError(f"Unsupported method: {method}")
 
-        # if there is no content then return empty dict
         if response.status_code == 204:
+            # HTTP 204 No Content: no response body is returned.
+            # Return an empty dictionary to maintain consistent response structure.
             return {}
 
         return response.json()

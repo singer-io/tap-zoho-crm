@@ -195,10 +195,6 @@ class BaseStream(ABC):
         """
         Modify the record before writing to the stream
         """
-        if self.replication_method == "INCREMENTAL" and self.replication_keys:
-            replication_key = self.replication_keys[0]
-            if not record[replication_key]:
-                record[replication_key] = self.client.config["start_date"]
         return record
 
     def get_url_endpoint(self, parent_obj: Dict = None) -> str:
@@ -274,18 +270,17 @@ class IncrementalStream(BaseStream):
                     record, self.schema, self.metadata
                 )
 
-                if self.replication_keys and transformed_record.get(self.replication_keys[0]):
-                    record_bookmark = transformed_record.get(self.replication_keys[0])
-                else:
-                    record_bookmark = bookmark_date
+                record_timestamp = transformed_record[self.replication_keys[0]]
+                if not record_timestamp:
+                    LOGGER.critical("Replication Key is None in response")
 
-                if record_bookmark >= bookmark_date:
+                if record_timestamp >= bookmark_date:
                     if self.is_selected():
                         write_record(self.tap_stream_id, transformed_record)
                         counter.increment()
 
                     current_max_bookmark_date = max(
-                        current_max_bookmark_date, record_bookmark
+                        current_max_bookmark_date, record_timestamp
                     )
 
                     for child in self.child_to_sync:

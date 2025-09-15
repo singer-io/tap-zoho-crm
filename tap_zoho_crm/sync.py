@@ -38,20 +38,19 @@ def build_dynamic_stream(client, catalog_entry: singer.CatalogEntry) -> object:
     """Create a dynamic stream instance based on stream_catalog."""
     catalog_metadata = metadata.to_map(catalog_entry.metadata)
 
-    stream_name = catalog_entry.stream
     tap_stream_id = catalog_entry.tap_stream_id
     key_properties = catalog_entry.key_properties
     replication_method = catalog_metadata.get((), {}).get('forced-replication-method')
     replication_keys = catalog_metadata.get((), {}).get('valid-replication-keys')
+    module_name = catalog_metadata.get((), {}).get('module-name')
 
     class_props = {
         "__module__": abstracts.__name__,
-        "stream_name": property(lambda self: stream_name),
         "tap_stream_id": property(lambda self: tap_stream_id),
         "key_properties": property(lambda self: key_properties),
         "replication_method": property(lambda self: replication_method),
         "replication_keys": property(lambda self: replication_keys),
-        "path": tap_stream_id,
+        "path": module_name,
         "data_key": "data",
         "is_dynamic": True
     }
@@ -91,10 +90,10 @@ def sync(client: Client, config: Dict, catalog: singer.Catalog, state) -> None:
 
     streams_to_sync = []
     for stream in catalog.get_selected_streams(state):
-        catalog_entry = catalog.get_stream(stream.tap_stream_id)
+        catalog_entry = catalog.get_stream(stream.stream)
         if config.get('select_fields_by_default') is False:
             deselect_unselected_fields(catalog_entry)
-        streams_to_sync.append(stream.tap_stream_id)
+        streams_to_sync.append(stream.stream)
 
     LOGGER.info("selected_streams: {}".format(streams_to_sync))
 

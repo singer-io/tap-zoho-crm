@@ -86,6 +86,8 @@ def get_static_schemas() -> Tuple[Dict, Dict]:
         if parent_tap_stream_id:
             mdata = metadata.write(mdata, (), 'parent-tap-stream-id', parent_tap_stream_id)
 
+        mdata = metadata.write(mdata, (), 'module-name', stream_name)
+
         mdata = metadata.to_list(mdata)
         field_metadata[stream_name] = mdata
 
@@ -264,6 +266,8 @@ def get_dynamic_schema(client: Client) -> Tuple[Dict, Dict]:
         if replication_key:
             mdata = metadata.write(
                 mdata, ('properties', replication_key), 'inclusion', 'automatic')
+
+        mdata = metadata.write(mdata, (), 'module-name', module)
 
         field_metadata[module] = metadata.to_list(mdata)
 

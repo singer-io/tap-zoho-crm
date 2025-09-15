@@ -32,9 +32,10 @@ def discover(client: Client) -> Catalog:
 
         key_properties = metadata.to_map(mdata).get((), {}).get("table-key-properties")
 
+        stream_name = stream_name.lower()
         catalog.streams.append(
             CatalogEntry(
-                stream=stream_name.lower(),
+                stream=stream_name,
                 tap_stream_id=stream_name,
                 key_properties=key_properties,
                 schema=schema,

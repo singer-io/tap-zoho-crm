@@ -39,17 +39,19 @@ def build_dynamic_stream(client, catalog_entry: singer.CatalogEntry) -> object:
     catalog_metadata = metadata.to_map(catalog_entry.metadata)
 
     stream_name = catalog_entry.stream
+    tap_stream_id = catalog_entry.tap_stream_id
     key_properties = catalog_entry.key_properties
     replication_method = catalog_metadata.get((), {}).get('forced-replication-method')
     replication_keys = catalog_metadata.get((), {}).get('valid-replication-keys')
 
     class_props = {
         "__module__": abstracts.__name__,
-        "tap_stream_id": property(lambda self: stream_name),
+        "stream_name": property(lambda self: stream_name),
+        "tap_stream_id": property(lambda self: tap_stream_id),
         "key_properties": property(lambda self: key_properties),
         "replication_method": property(lambda self: replication_method),
         "replication_keys": property(lambda self: replication_keys),
-        "path": stream_name,
+        "path": tap_stream_id,
         "data_key": "data",
         "is_dynamic": True
     }
@@ -57,7 +59,7 @@ def build_dynamic_stream(client, catalog_entry: singer.CatalogEntry) -> object:
     base_class = IncrementalStream if replication_method.upper() == "INCREMENTAL" else FullTableStream
 
     DynamicStreamClass = type(
-        f"Dynamic{stream_name.title()}Stream",
+        f"Dynamic{tap_stream_id.title()}Stream",
         (base_class,),
         class_props
     )
@@ -89,10 +91,10 @@ def sync(client: Client, config: Dict, catalog: singer.Catalog, state) -> None:
 
     streams_to_sync = []
     for stream in catalog.get_selected_streams(state):
-        catalog_entry = catalog.get_stream(stream.stream)
+        catalog_entry = catalog.get_stream(stream.tap_stream_id)
         if config.get('select_fields_by_default') is False:
             deselect_unselected_fields(catalog_entry)
-        streams_to_sync.append(stream.stream)
+        streams_to_sync.append(stream.tap_stream_id)
 
     LOGGER.info("selected_streams: {}".format(streams_to_sync))
 

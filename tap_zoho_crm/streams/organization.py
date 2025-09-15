@@ -4,7 +4,7 @@ class Organization(FullTableStream):
     tap_stream_id = "organization"
     key_properties = ["id"]
     replication_method = "FULL_TABLE"
-    replication_key = []
+    replication_keys = []
     data_key = "org"
     path = "org"
 

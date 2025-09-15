@@ -9,7 +9,8 @@ from singer import (
     write_bookmark,
     write_record,
     write_schema,
-    metadata
+    metadata,
+    utils
 )
 
 LOGGER = get_logger()
@@ -194,6 +195,10 @@ class BaseStream(ABC):
         """
         Modify the record before writing to the stream
         """
+        if self.replication_method == "INCREMENTAL" and self.replication_keys:
+            replication_key = self.replication_keys[0]
+            if not record[replication_key]:
+                record[replication_key] = self.client.config["start_date"]
         return record
 
     def get_url_endpoint(self, parent_obj: Dict = None) -> str:

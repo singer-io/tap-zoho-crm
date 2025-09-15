@@ -76,91 +76,84 @@ class Zoho_CRMBaseTest(BaseCase):
                 cls.API_LIMIT: 200
             },
             # Dynamic Schemas for testing
-            "Leads": {
+            "leads": {
                 cls.PRIMARY_KEYS: { "id" },
                 cls.REPLICATION_METHOD: cls.INCREMENTAL,
                 cls.REPLICATION_KEYS: { "Modified_Time" },
                 cls.OBEYS_START_DATE: False,
                 cls.API_LIMIT: 200
             },
-            "Accounts": {
+            "accounts": {
                 cls.PRIMARY_KEYS: { "id" },
                 cls.REPLICATION_METHOD: cls.INCREMENTAL,
                 cls.REPLICATION_KEYS: { "Modified_Time" },
                 cls.OBEYS_START_DATE: False,
                 cls.API_LIMIT: 200
             },
-            "Calls": {
+            "calls": {
                 cls.PRIMARY_KEYS: { "id" },
                 cls.REPLICATION_METHOD: cls.INCREMENTAL,
                 cls.REPLICATION_KEYS: { "Modified_Time" },
                 cls.OBEYS_START_DATE: False,
                 cls.API_LIMIT: 200
             },
-            "Tasks": {
+            "tasks": {
                 cls.PRIMARY_KEYS: { "id" },
                 cls.REPLICATION_METHOD: cls.INCREMENTAL,
                 cls.REPLICATION_KEYS: { "Modified_Time" },
                 cls.OBEYS_START_DATE: False,
                 cls.API_LIMIT: 200
             },
-            "Campaigns": {
+            "campaigns": {
                 cls.PRIMARY_KEYS: { "id" },
                 cls.REPLICATION_METHOD: cls.INCREMENTAL,
                 cls.REPLICATION_KEYS: { "Modified_Time" },
                 cls.OBEYS_START_DATE: False,
                 cls.API_LIMIT: 200
             },
-            "Deals": {
+            "deals": {
                 cls.PRIMARY_KEYS: { "id" },
                 cls.REPLICATION_METHOD: cls.INCREMENTAL,
                 cls.REPLICATION_KEYS: { "Modified_Time" },
                 cls.OBEYS_START_DATE: False,
                 cls.API_LIMIT: 200
             },
-            "Notes": {
+            "notes": {
                 cls.PRIMARY_KEYS: { "id" },
                 cls.REPLICATION_METHOD: cls.INCREMENTAL,
                 cls.REPLICATION_KEYS: { "Modified_Time" },
                 cls.OBEYS_START_DATE: False,
                 cls.API_LIMIT: 200
             },
-            "Calls": {
+            "dealhistory": {
                 cls.PRIMARY_KEYS: { "id" },
                 cls.REPLICATION_METHOD: cls.INCREMENTAL,
                 cls.REPLICATION_KEYS: { "Modified_Time" },
                 cls.OBEYS_START_DATE: False,
                 cls.API_LIMIT: 200
             },
-            "DealHistory": {
+            "attachments": {
                 cls.PRIMARY_KEYS: { "id" },
                 cls.REPLICATION_METHOD: cls.INCREMENTAL,
                 cls.REPLICATION_KEYS: { "Modified_Time" },
                 cls.OBEYS_START_DATE: False,
                 cls.API_LIMIT: 200
             },
-            "Attachments": {
+            "contacts": {
                 cls.PRIMARY_KEYS: { "id" },
                 cls.REPLICATION_METHOD: cls.INCREMENTAL,
                 cls.REPLICATION_KEYS: { "Modified_Time" },
                 cls.OBEYS_START_DATE: False,
                 cls.API_LIMIT: 200
             },
-            "Contacts": {
+            "appointments_rescheduled_history__s": {
                 cls.PRIMARY_KEYS: { "id" },
                 cls.REPLICATION_METHOD: cls.INCREMENTAL,
                 cls.REPLICATION_KEYS: { "Modified_Time" },
                 cls.OBEYS_START_DATE: False,
                 cls.API_LIMIT: 200
             },
-            "Appointments_Rescheduled_History__s": {
-                cls.PRIMARY_KEYS: { "id" },
-                cls.REPLICATION_METHOD: cls.INCREMENTAL,
-                cls.REPLICATION_KEYS: { "Modified_Time" },
-                cls.OBEYS_START_DATE: False,
-                cls.API_LIMIT: 200
-            },
-            "Events": {
+            "events": {
                 cls.PRIMARY_KEYS: { "id" },
                 cls.REPLICATION_METHOD: cls.INCREMENTAL,
                 cls.REPLICATION_KEYS: { "Modified_Time" },

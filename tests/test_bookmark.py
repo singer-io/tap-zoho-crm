@@ -8,11 +8,9 @@ class Zoho_CRMBookMarkTest(BookmarkTest, Zoho_CRMBaseTest):
     bookmark_format = "%Y-%m-%dT%H:%M:%S.%fZ"
     initial_bookmarks = {
         "bookmarks": {
-            "appointments": { "Modified_Time" : "2020-01-01T00:00:00Z"},
             "currencies": { "modified_time" : "2020-01-01T00:00:00Z"},
             "profiles": { "modified_time" : "2020-01-01T00:00:00Z"},
             "roles": { "modified_time__s" : "2020-01-01T00:00:00Z"},
-            "services": { "Modified_Time" : "2020-01-01T00:00:00Z"},
             "territories": { "modified_time" : "2020-01-01T00:00:00Z"},
             "users": { "Modified_Time" : "2020-01-01T00:00:00Z"},
         }

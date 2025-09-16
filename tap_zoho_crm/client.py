@@ -39,12 +39,29 @@ def raise_for_error(response: requests.Response) -> None:
     error_code = response_json.get("code", "").upper()
     error_text = response_json.get("message", "")
     error_status = response_json.get("status", "").lower()
+    error_type = response_json.get("error", "").upper()
+    error_desc = response_json.get("error_description", "").lower()
 
     SKIPPABLE_ERRORS = {
         (401, "OAUTH_SCOPE_MISMATCH"): "The OAuth token does not have the required scope to access the stream.",
         (400, "FEATURE_NOT_ENABLED"): "The stream is not available for sync with the current account scope.",
         (400, "NO_PERMISSION"): "The stream is not available for sync; permission denied to access the module.",
     }
+
+    RETRYABLE_ERRORS = {
+        (
+            400,
+            "ACCESS DENIED",
+            "too many requests continuously. Please try again after some time."
+        ): ZohoCRMRateLimitError
+    }
+
+    for (code, err_type, desc_substr), exception_cls in RETRYABLE_ERRORS.items():
+        if response.status_code == code and error_type == err_type and desc_substr in error_desc:
+            raise exception_cls(
+                f"{code} Retryable Error: {response_json.get('error_description', '')}",
+                response
+            )
 
     if (response.status_code, error_code) in SKIPPABLE_ERRORS:
         LOGGER.info(f"Skipping stream: {SKIPPABLE_ERRORS[(response.status_code, error_code)]}")

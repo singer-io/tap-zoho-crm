@@ -57,7 +57,7 @@ def raise_for_error(response: requests.Response) -> None:
     }
 
     for (code, err_type, desc_substr), exception_cls in RETRYABLE_ERRORS.items():
-        if response.status_code == code and error_type == err_type and desc_substr in error_desc:
+        if response.status_code == code and error_type == err_type and desc_substr.lower() in error_desc:
             raise exception_cls(
                 f"{code} Retryable Error: {response_json.get('error_description', '')}",
                 response

@@ -170,8 +170,7 @@ class Zoho_CRMBaseTest(BaseCase):
             'client_id': 'TAP_ZOHO_CRM_CLIENT_ID',
             'client_secret': 'TAP_ZOHO_CRM_CLIENT_SECRET',
             'refresh_token': 'TAP_ZOHO_CRM_REFRESH_TOKEN',
-            'api_version': 'TAP_ZOHO_CRM_API_VERSION',
-            'select_fields_by_default': 'TAP_ZOHO_CRM_SELECT_FIELDS_BY_DEFAULT' 
+            'select_fields_by_default': 'TAP_ZOHO_CRM_SELECT_FIELDS_BY_DEFAULT'
         }
 
         for cred in creds:

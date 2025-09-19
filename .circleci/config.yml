@@ -16,7 +16,7 @@ jobs:
           name: "JSON Validator"
           command: |
             source /usr/local/share/virtualenvs/tap-tester/bin/activate
-            stitch-validate-json tap-zoho-crm/schemas/*.json
+            stitch-validate-json tap_zoho_crm/schemas/*.json
       - run:
           name: "pylint"
           command: |

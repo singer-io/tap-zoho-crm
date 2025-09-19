@@ -30,12 +30,6 @@ This tap:
 
 ## Streams
 
-
-**[appointments](https://www.zoho.com/crm/developer/docs/api/v8/get-appointments.html)**
-- Data Key = data
-- Primary keys: ['id']
-- Replication strategy: INCREMENTAL
-
 **[currencies](https://www.zoho.com/crm/developer/docs/api/v8/get-currencies-data.html)**
 - Data Key = data
 - Primary keys: ['id']
@@ -49,17 +43,12 @@ This tap:
 **[profiles](https://www.zoho.com/crm/developer/docs/api/v8/get-profiles.html)**
 - Data Key = profiles
 - Primary keys: ['id']
-- Replication strategy: INCREMENTAL
+- Replication strategy: FULL_TABLE
 
 **[roles](https://www.zoho.com/crm/developer/docs/api/v8/get-roles.html)**
 - Data Key = roles
 - Primary keys: ['id']
-- Replication strategy: INCREMENTAL
-
-**[services](https://www.zoho.com/crm/developer/docs/api/v8/get-services.html)**
-- Data Key = data
-- Primary keys: ['id']
-- Replication strategy: INCREMENTAL
+- Replication strategy: FULL_TABLE
 
 **[territories](https://www.zoho.com/crm/developer/docs/api/v8/territories.html)**
 - Data Key = territories
@@ -105,7 +94,6 @@ This tap:
    - `refresh_token` - User account refresh token should be provided
    - `start_date` - the default value to use if no bookmark exists for an endpoint (rfc3339 date string)
    - `user_agent` - (string, optional): Process and email for API logging purposes. Example: `tap-zoho-crm <api_user_email@your_company.com>`
-   - `api_version` - (string) Current api version which we are using to extract data.
    - `select_fields_by_default` - (boolean-true/false) If we want to add new metadata fields, which are added to module/stream after running discovery.
    - `request_timeout` - (integer, `300`): Max time for which request should wait to get a response. Default request_timeout is 300 seconds.
 
@@ -116,7 +104,6 @@ This tap:
         "refresh_token": "the_refresh_token",
         "start_date": "2019-01-01T00:00:00Z",
         "user_agent": "tap-zoho-crm <api_user_email@your_company.com>",
-        "api_version": "v8",
         "select_fields_by_default": false,
         "request_timeout": 300
     }

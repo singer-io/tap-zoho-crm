@@ -14,7 +14,7 @@ from tap_zoho_crm.exceptions import (
     ZohoCRMRateLimitError,
     ZohoCRMInternalServerError,
     ZohoCRMServiceUnavailableError
-    )
+)
 
 LOGGER = get_logger()
 REQUEST_TIMEOUT = 300

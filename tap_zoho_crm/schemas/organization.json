@@ -1,0 +1,283 @@
+{
+    "type": "object",
+    "properties": {
+        "country": {
+            "type": [
+                "null",
+                "string"
+            ]
+        },
+        "hierarchy_preferences": {
+            "type": [
+                "null",
+                "object"
+            ],
+            "properties": {
+                "type": {
+                    "type": [
+                        "null",
+                        "string"
+                    ]
+                }
+            }
+        },
+        "photo_id": {
+            "type": [
+                "null",
+                "string"
+            ]
+        },
+        "city": {
+            "type": [
+                "null",
+                "string"
+            ]
+        },
+        "description": {
+            "type": [
+                "null",
+                "string"
+            ]
+        },
+        "type": {
+            "type": [
+                "null",
+                "string"
+            ]
+        },
+        "mc_status": {
+            "type": [
+                "null",
+                "boolean"
+            ]
+        },
+        "gapps_enabled": {
+            "type": [
+                "null",
+                "boolean"
+            ]
+        },
+        "lite_users_enabled": {
+            "type": [
+                "null",
+                "boolean"
+            ]
+        },
+        "domain_name": {
+            "type": [
+                "null",
+                "string"
+            ]
+        },
+        "translation_enabled": {
+            "type": [
+                "null",
+                "boolean"
+            ]
+        },
+        "street": {
+            "type": [
+                "null",
+                "string"
+            ]
+        },
+        "alias": {
+            "type": [
+                "null",
+                "string"
+            ]
+        },
+        "currency": {
+            "type": [
+                "null",
+                "string"
+            ]
+        },
+        "deletable_org_account": {
+            "type": [
+                "null",
+                "boolean"
+            ]
+        },
+        "id": {
+            "type": [
+                "null",
+                "string"
+            ]
+        },
+        "state": {
+            "type": [
+                "null",
+                "string"
+            ]
+        },
+        "fax": {
+            "type": [
+                "null",
+                "string"
+            ]
+        },
+        "employee_count": {
+            "type": [
+                "null",
+                "string"
+            ]
+        },
+        "zip": {
+            "type": [
+                "null",
+                "string"
+            ]
+        },
+        "created_time": {
+            "type": [
+                "null",
+                "string"
+            ],
+            "format": "date-time"
+        },
+        "website": {
+            "type": [
+                "null",
+                "string"
+            ]
+        },
+        "currency_symbol": {
+            "type": [
+                "null",
+                "string"
+            ]
+        },
+        "mobile": {
+            "type": [
+                "null",
+                "string"
+            ]
+        },
+        "currency_locale": {
+            "type": [
+                "null",
+                "string"
+            ]
+        },
+        "primary_zuid": {
+            "type": [
+                "null",
+                "string"
+            ]
+        },
+        "zia_portal_id": {
+            "type": [
+                "null",
+                "string"
+            ]
+        },
+        "time_zone": {
+            "type": [
+                "null",
+                "string"
+            ]
+        },
+        "zgid": {
+            "type": [
+                "null",
+                "string"
+            ]
+        },
+        "country_code": {
+            "type": [
+                "null",
+                "string"
+            ]
+        },
+        "license_details": {
+            "type": [
+                "null",
+                "object"
+            ],
+            "properties": {
+                "paid_expiry": {
+                    "type": [
+                        "null",
+                        "string"
+                    ],
+                    "format": "date-time"
+                },
+                "users_license_purchased": {
+                    "type": [
+                        "null",
+                        "integer"
+                    ]
+                },
+                "trial_type": {
+                    "type": [
+                        "null",
+                        "string"
+                    ]
+                },
+                "trial_expiry": {
+                    "type": [
+                        "null",
+                        "string"
+                    ],
+                    "format": "date-time"
+                },
+                "paid": {
+                    "type": [
+                        "null",
+                        "boolean"
+                    ]
+                },
+                "paid_type": {
+                    "type": [
+                        "null",
+                        "string"
+                    ]
+                },
+                "portal_users_license_purchased": {
+                    "type": [
+                        "null",
+                        "integer"
+                    ]
+                }
+            }
+        },
+        "phone": {
+            "type": [
+                "null",
+                "string"
+            ]
+        },
+        "company_name": {
+            "type": [
+                "null",
+                "string"
+            ]
+        },
+        "privacy_settings": {
+            "type": [
+                "null",
+                "boolean"
+            ]
+        },
+        "primary_email": {
+            "type": [
+                "null",
+                "string"
+            ],
+            "format": "email"
+        },
+        "hipaa_compliance_enabled": {
+            "type": [
+                "null",
+                "boolean"
+            ]
+        },
+        "iso_code": {
+            "type": [
+                "null",
+                "string"
+            ]
+        }
+    }
+}

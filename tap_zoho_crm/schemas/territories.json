@@ -1,0 +1,129 @@
+{
+    "type": "object",
+    "properties": {
+        "created_time": {
+            "type": [
+                "null",
+                "string"
+            ],
+            "format": "date-time"
+        },
+        "permission_type": {
+            "type": [
+                "null",
+                "string"
+            ]
+        },
+        "modified_time": {
+            "type": [
+                "null",
+                "string"
+            ],
+            "format": "date-time"
+        },
+        "manager": {
+            "type": [
+                "null",
+                "object"
+            ],
+            "properties": {
+                "name": {
+                    "type": [
+                        "null",
+                        "string"
+                    ]
+                },
+                "id": {
+                    "type": [
+                        "null",
+                        "string"
+                    ]
+                }
+            }
+        },
+        "api_name": {
+            "type": [
+                "null",
+                "string"
+            ]
+        },
+        "name": {
+            "type": [
+                "null",
+                "string"
+            ]
+        },
+        "modified_by": {
+            "type": [
+                "null",
+                "object"
+            ],
+            "properties": {
+                "name": {
+                    "type": [
+                        "null",
+                        "string"
+                    ]
+                },
+                "id": {
+                    "type": [
+                        "null",
+                        "string"
+                    ]
+                }
+            }
+        },
+        "description": {
+            "type": [
+                "null",
+                "string"
+            ]
+        },
+        "id": {
+            "type": [
+                "null",
+                "string"
+            ]
+        },
+        "reporting_to": {
+            "type": [
+                "null",
+                "object"
+            ],
+            "properties": {
+                "name": {
+                    "type": [
+                        "null",
+                        "string"
+                    ]
+                },
+                "id": {
+                    "type": [
+                        "null",
+                        "string"
+                    ]
+                }
+            }
+        },
+        "created_by": {
+            "type": [
+                "null",
+                "object"
+            ],
+            "properties": {
+                "name": {
+                    "type": [
+                        "null",
+                        "string"
+                    ]
+                },
+                "id": {
+                    "type": [
+                        "null",
+                        "string"
+                    ]
+                }
+            }
+        }
+    }
+}

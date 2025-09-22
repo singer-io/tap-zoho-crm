@@ -227,7 +227,7 @@ class Client:
         exception=(
             ZohoCRMRateLimitError,
         ),
-        max_tries=3,
+        max_tries=5,
         interval=1
     )
     def __make_request(

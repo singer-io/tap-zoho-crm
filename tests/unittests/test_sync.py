@@ -37,11 +37,11 @@ class TestSync(unittest.TestCase):
         mock_catalog = MagicMock()
         currency_stream = MagicMock()
         currency_stream.stream = "currencies"
-        profile_stream = MagicMock()
-        profile_stream.stream = "profiles"
+        user_stream = MagicMock()
+        user_stream.stream = "users"
         mock_catalog.get_selected_streams.return_value = [
             currency_stream,
-            profile_stream
+            user_stream
         ]
         state = {}
 
@@ -80,23 +80,27 @@ class TestSync(unittest.TestCase):
         mock_write_state.assert_called_once_with(state)
         self.assertNotIn("currently_syncing", state)
 
-    @patch("tap_zoho_crm.sync.metadata.to_map")
-    def test_build_dynamic_stream_full_table(self, mock_to_map):
+    def test_build_dynamic_stream_full_table(self):
         """Test build_dynamic_stream returns FullTableStream subclass when method is FULL_TABLE."""
-        mock_to_map.return_value = {
-            (): {
-                "forced-replication-method": "FULL_TABLE",
-                "valid-replication-keys": ["id"]
-            }
-        }
-
         catalog_entry = MagicMock()
         catalog_entry.stream = "accounts"
+        catalog_entry.tap_stream_id = "accounts"
         catalog_entry.key_properties = ["id"]
-        catalog_entry.metadata = "mock_metadata"
+
+        # Here's the mocked metadata (as a raw dict)
+        catalog_entry.metadata = [
+            {
+                "breadcrumb": [],
+                "metadata": {
+                    "tap_stream_id": "accounts",
+                    "forced-replication-method": "FULL_TABLE",
+                    "valid-replication-keys": ["id"],
+                    "module-name": "Accounts"
+                }
+            }
+        ]
 
         mock_client = MagicMock()
-
         stream_instance = build_dynamic_stream(mock_client, catalog_entry)
 
         self.assertIsInstance(stream_instance, FullTableStream)
@@ -104,32 +108,36 @@ class TestSync(unittest.TestCase):
         self.assertEqual(stream_instance.key_properties, ["id"])
         self.assertEqual(stream_instance.replication_method, "FULL_TABLE")
         self.assertEqual(stream_instance.replication_keys, ["id"])
-        self.assertEqual(stream_instance.path, "accounts")
+        self.assertEqual(stream_instance.path, "Accounts")
         self.assertEqual(stream_instance.data_key, "data")
         self.assertTrue(stream_instance.is_dynamic)
 
-    @patch("tap_zoho_crm.sync.metadata.to_map")
-    def test_build_dynamic_stream_incremental(self, mock_to_map):
+    def test_build_dynamic_stream_incremental(self):
         """Test build_dynamic_stream returns IncrementalStream subclass when method is INCREMENTAL."""
-
-        mock_to_map.return_value = {
-            (): {
-                "forced-replication-method": "INCREMENTAL",
-                "valid-replication-keys": ["updated_at"]
-            }
-        }
-
         catalog_entry = MagicMock()
         catalog_entry.stream = "contacts"
+        catalog_entry.tap_stream_id = "contacts"
         catalog_entry.key_properties = ["id"]
-        catalog_entry.metadata = "mock_metadata"
+        catalog_entry.metadata = [
+            {
+                "breadcrumb": [],
+                "metadata": {
+                    "tap_stream_id": "contacts",
+                    "forced-replication-method": "INCREMENTAL",
+                    "valid-replication-keys": ["updated_at"],
+                    "module-name": "Contacts"
+                }
+            }
+        ]
 
         mock_client = MagicMock()
-
         stream_instance = build_dynamic_stream(mock_client, catalog_entry)
 
         self.assertIsInstance(stream_instance, IncrementalStream)
         self.assertEqual(stream_instance.tap_stream_id, "contacts")
         self.assertEqual(stream_instance.replication_method, "INCREMENTAL")
         self.assertEqual(stream_instance.replication_keys, ["updated_at"])
+        self.assertEqual(stream_instance.path, "Contacts")
+        self.assertEqual(stream_instance.data_key, "data")
+        self.assertTrue(stream_instance.is_dynamic)
 

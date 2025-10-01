@@ -63,6 +63,9 @@ This tap:
 
 
 ## Authentication
+Zoho CRM uses OAuth 2.0 for authentication. You'll need to create a Zoho client and generate the necessary tokens to access the API.
+- [Go to the Zoho API Console](https://api-console.zoho.com/).
+- [OAuth 2.0  - An Overview](https://www.zoho.com/crm/developer/docs/api/v8/oauth-overview.html)
 
 ## Quick Start
 

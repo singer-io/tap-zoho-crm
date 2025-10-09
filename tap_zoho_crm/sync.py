@@ -42,7 +42,6 @@ def build_dynamic_stream(client, catalog_entry: singer.CatalogEntry) -> object:
     key_properties = catalog_entry.key_properties
     replication_method = catalog_metadata.get((), {}).get('forced-replication-method')
     replication_keys = catalog_metadata.get((), {}).get('valid-replication-keys')
-    # module_name = catalog_metadata.get((), {}).get('module-name')
 
     class_props = {
         "__module__": abstracts.__name__,

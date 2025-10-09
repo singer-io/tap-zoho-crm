@@ -127,7 +127,8 @@ def get_replication_and_primary_key(
     replication_key = None
     if module not in FORCED_FULL_TABLE:
         for candidate in REPLICATION_KEY_CANDIDATES:
-            if candidate.lower() in field_lookup:
+            candidate = candidate.lower()
+            if candidate in field_lookup:
                 replication_key = field_lookup.get(candidate)
                 break
 

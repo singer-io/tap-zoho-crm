@@ -86,8 +86,6 @@ def get_static_schemas() -> Tuple[Dict, Dict]:
         if parent_tap_stream_id:
             mdata = metadata.write(mdata, (), 'parent-tap-stream-id', parent_tap_stream_id)
 
-        mdata = metadata.write(mdata, (), 'module-name', stream_name)
-
         mdata = metadata.to_list(mdata)
         field_metadata[stream_name] = mdata
 
@@ -121,21 +119,24 @@ def get_replication_and_primary_key(
     """
     Determine the appropriate replication key and primary key for a module.
     """
-    available_fields = {field.get('api_name') for field in fields}
+    field_lookup = {
+        field.get('api_name', '').lower(): field.get('api_name')
+        for field in fields
+    }
 
     replication_key = None
     if module not in FORCED_FULL_TABLE:
         for candidate in REPLICATION_KEY_CANDIDATES:
-            if candidate in available_fields:
-                replication_key = candidate
+            if candidate.lower() in field_lookup:
+                replication_key = field_lookup.get(candidate)
                 break
 
     primary_key = PK_OVERRIDES.get(module)
     if not primary_key:
-        if "id" in available_fields:
+        if "id" in field_lookup:
             primary_key = "id"
-        elif "Sequence_Number" in available_fields:
-            primary_key = "Sequence_Number"
+        elif "sequence_number" in field_lookup:
+            primary_key = field_lookup.get("sequence_number")
         else:
             primary_key = None
 
@@ -266,8 +267,6 @@ def get_dynamic_schema(client: Client) -> Tuple[Dict, Dict]:
         if replication_key:
             mdata = metadata.write(
                 mdata, ('properties', replication_key), 'inclusion', 'automatic')
-
-        mdata = metadata.write(mdata, (), 'module-name', module)
 
         field_metadata[module] = metadata.to_list(mdata)
 

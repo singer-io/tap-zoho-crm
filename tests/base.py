@@ -153,6 +153,13 @@ class Zoho_CRMBaseTest(BaseCase):
                 cls.OBEYS_START_DATE: False,
                 cls.API_LIMIT: 200
             },
+            "functions__s": {
+                cls.PRIMARY_KEYS: { "id" },
+                cls.REPLICATION_METHOD: cls.INCREMENTAL,
+                cls.REPLICATION_KEYS: { "modified_time" },
+                cls.OBEYS_START_DATE: False,
+                cls.API_LIMIT: 200
+            },
             "events": {
                 cls.PRIMARY_KEYS: { "id" },
                 cls.REPLICATION_METHOD: cls.INCREMENTAL,

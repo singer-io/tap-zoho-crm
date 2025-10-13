@@ -37,8 +37,10 @@ class TestSync(unittest.TestCase):
         mock_catalog = MagicMock()
         currency_stream = MagicMock()
         currency_stream.stream = "currencies"
+        currency_stream.tap_stream_id = "currencies"
         user_stream = MagicMock()
         user_stream.stream = "users"
+        user_stream.tap_stream_id = "users"
         mock_catalog.get_selected_streams.return_value = [
             currency_stream,
             user_stream
@@ -84,7 +86,7 @@ class TestSync(unittest.TestCase):
         """Test build_dynamic_stream returns FullTableStream subclass when method is FULL_TABLE."""
         catalog_entry = MagicMock()
         catalog_entry.stream = "accounts"
-        catalog_entry.tap_stream_id = "accounts"
+        catalog_entry.tap_stream_id = "Accounts"
         catalog_entry.key_properties = ["id"]
 
         # Here's the mocked metadata (as a raw dict)
@@ -92,10 +94,9 @@ class TestSync(unittest.TestCase):
             {
                 "breadcrumb": [],
                 "metadata": {
-                    "tap_stream_id": "accounts",
+                    "tap_stream_id": "Accounts",
                     "forced-replication-method": "FULL_TABLE",
-                    "valid-replication-keys": ["id"],
-                    "module-name": "Accounts"
+                    "valid-replication-keys": ["id"]
                 }
             }
         ]
@@ -104,7 +105,7 @@ class TestSync(unittest.TestCase):
         stream_instance = build_dynamic_stream(mock_client, catalog_entry)
 
         self.assertIsInstance(stream_instance, FullTableStream)
-        self.assertEqual(stream_instance.tap_stream_id, "accounts")
+        self.assertEqual(stream_instance.tap_stream_id, "Accounts")
         self.assertEqual(stream_instance.key_properties, ["id"])
         self.assertEqual(stream_instance.replication_method, "FULL_TABLE")
         self.assertEqual(stream_instance.replication_keys, ["id"])
@@ -116,16 +117,15 @@ class TestSync(unittest.TestCase):
         """Test build_dynamic_stream returns IncrementalStream subclass when method is INCREMENTAL."""
         catalog_entry = MagicMock()
         catalog_entry.stream = "contacts"
-        catalog_entry.tap_stream_id = "contacts"
+        catalog_entry.tap_stream_id = "Contacts"
         catalog_entry.key_properties = ["id"]
         catalog_entry.metadata = [
             {
                 "breadcrumb": [],
                 "metadata": {
-                    "tap_stream_id": "contacts",
+                    "tap_stream_id": "Contacts",
                     "forced-replication-method": "INCREMENTAL",
-                    "valid-replication-keys": ["updated_at"],
-                    "module-name": "Contacts"
+                    "valid-replication-keys": ["updated_at"]
                 }
             }
         ]
@@ -134,7 +134,7 @@ class TestSync(unittest.TestCase):
         stream_instance = build_dynamic_stream(mock_client, catalog_entry)
 
         self.assertIsInstance(stream_instance, IncrementalStream)
-        self.assertEqual(stream_instance.tap_stream_id, "contacts")
+        self.assertEqual(stream_instance.tap_stream_id, "Contacts")
         self.assertEqual(stream_instance.replication_method, "INCREMENTAL")
         self.assertEqual(stream_instance.replication_keys, ["updated_at"])
         self.assertEqual(stream_instance.path, "Contacts")

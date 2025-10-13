@@ -119,10 +119,19 @@ def get_replication_and_primary_key(
     """
     Determine the appropriate replication key and primary key for a module.
     """
-    field_lookup = {
-        field.get('api_name', '').lower(): field.get('api_name')
-        for field in fields
-    }
+    field_lookup = {}
+    for field in fields:
+        api_name = field.get('api_name')
+        if not api_name:
+            continue
+
+        key = api_name.lower()
+        if key in field_lookup:
+            LOGGER.warning(
+                f"Duplicate api_name detected when lowercased: '{api_name}' "
+                f"(collides with '{field_lookup[key]}') in module '{module}'."
+            )
+        field_lookup[key] = api_name
 
     replication_key = None
     if module not in FORCED_FULL_TABLE:

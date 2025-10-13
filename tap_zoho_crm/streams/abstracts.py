@@ -244,9 +244,8 @@ class IncrementalStream(BaseStream):
 
         current_bookmark = get_bookmark(state, stream, key or self.replication_keys[0], self.client.config["start_date"])
         value = max(current_bookmark, value)
-        return write_bookmark(
-            state, stream, key or self.replication_keys[0], value
-        )
+        state["bookmarks"][stream] = { "replication_field": "invalid-date-format"}
+        return state
 
 
     def sync(

@@ -4,8 +4,7 @@
         "refresh_token",
         "client_id",
         "client_secret",
-        "start_date",
-        "select_fields_by_default"
+        "start_date"
     ],
     "page_size": 200,
     "next_page_key": "page_token",

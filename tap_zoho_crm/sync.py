@@ -90,7 +90,7 @@ def sync(client: Client, config: Dict, catalog: singer.Catalog, state) -> None:
     streams_to_sync = []
     for stream in catalog.get_selected_streams(state):
         catalog_entry = catalog.get_stream(stream.tap_stream_id)
-        if config.get('select_fields_by_default') is False:
+        if config.get('select_fields_by_default', False) is False:
             deselect_unselected_fields(catalog_entry)
         streams_to_sync.append(stream.tap_stream_id)
 

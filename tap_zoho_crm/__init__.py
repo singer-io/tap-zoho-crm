@@ -11,8 +11,7 @@ REQUIRED_CONFIG_KEYS = [
     'refresh_token',
     'client_id',
     'client_secret',
-    'start_date',
-    'select_fields_by_default'
+    'start_date'
     ]
 
 def do_discover(client: Client):

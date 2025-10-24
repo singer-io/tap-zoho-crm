@@ -176,8 +176,7 @@ class Zoho_CRMBaseTest(BaseCase):
         creds = {
             'client_id': 'TAP_ZOHO_CRM_CLIENT_ID',
             'client_secret': 'TAP_ZOHO_CRM_CLIENT_SECRET',
-            'refresh_token': 'TAP_ZOHO_CRM_REFRESH_TOKEN',
-            'select_fields_by_default': 'TAP_ZOHO_CRM_SELECT_FIELDS_BY_DEFAULT'
+            'refresh_token': 'TAP_ZOHO_CRM_REFRESH_TOKEN'
         }
 
         for cred in creds:

@@ -97,7 +97,7 @@ Zoho CRM uses OAuth 2.0 for authentication. You'll need to create a Zoho client 
    - `refresh_token` - User account refresh token should be provided
    - `start_date` - the default value to use if no bookmark exists for an endpoint (rfc3339 date string)
    - `user_agent` - (string, optional): Process and email for API logging purposes. Example: `tap-zoho-crm <api_user_email@your_company.com>`
-   - `select_fields_by_default` - (boolean-true/false) If we want to add new metadata fields, which are added to module/stream after running discovery.
+   - `select_fields_by_default` - (boolean-true/false, optional) If we want to add new metadata fields, which are added to module/stream after running discovery.
    - `request_timeout` - (integer, `300`): Max time for which request should wait to get a response. Default request_timeout is 300 seconds.
 
     ```json

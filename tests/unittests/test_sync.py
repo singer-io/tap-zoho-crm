@@ -96,14 +96,13 @@ class TestSync(unittest.TestCase):
                 "metadata": {
                     "tap_stream_id": "accounts",
                     "forced-replication-method": "FULL_TABLE",
-                    "valid-replication-keys": ["id"],
-                    "module-path": "Accounts"
+                    "valid-replication-keys": ["id"]
                 }
             }
         ]
 
         mock_client = MagicMock()
-        stream_instance = build_dynamic_stream(mock_client, catalog_entry)
+        stream_instance = build_dynamic_stream(mock_client, catalog_entry, "Accounts")
 
         self.assertIsInstance(stream_instance, FullTableStream)
         self.assertEqual(stream_instance.tap_stream_id, "accounts")
@@ -126,14 +125,13 @@ class TestSync(unittest.TestCase):
                 "metadata": {
                     "tap_stream_id": "contacts",
                     "forced-replication-method": "INCREMENTAL",
-                    "valid-replication-keys": ["updated_at"],
-                    "module-path": "Contacts"
+                    "valid-replication-keys": ["updated_at"]
                 }
             }
         ]
 
         mock_client = MagicMock()
-        stream_instance = build_dynamic_stream(mock_client, catalog_entry)
+        stream_instance = build_dynamic_stream(mock_client, catalog_entry, "Contacts")
 
         self.assertIsInstance(stream_instance, IncrementalStream)
         self.assertEqual(stream_instance.tap_stream_id, "contacts")

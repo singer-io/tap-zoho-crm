@@ -278,6 +278,7 @@ def get_dynamic_schema(client: Client) -> Tuple[Dict, Dict]:
             mdata = metadata.write(
                 mdata, ('properties', replication_key), 'inclusion', 'automatic')
 
+        mdata = metadata.write(mdata, (), 'module-path', module)
         field_metadata[module] = metadata.to_list(mdata)
 
     return schemas, field_metadata

@@ -4,6 +4,7 @@ from singer import metadata
 from tap_zoho_crm.streams import STREAMS, abstracts
 from tap_zoho_crm.client import Client
 from tap_zoho_crm.streams.abstracts import IncrementalStream, FullTableStream
+from tap_zoho_crm.schema import get_dynamic_schema
 
 LOGGER = singer.get_logger()
 
@@ -34,7 +35,11 @@ def write_schema(stream, client, streams_to_sync, catalog) -> None:
             stream.child_to_sync.append(child_obj)
 
 
-def build_dynamic_stream(client, catalog_entry: singer.CatalogEntry) -> object:
+def build_dynamic_stream(
+        client,
+        catalog_entry: singer.CatalogEntry,
+        module_path: str
+    ) -> object:
     """Create a dynamic stream instance based on stream_catalog."""
     catalog_metadata = metadata.to_map(catalog_entry.metadata)
 
@@ -49,7 +54,7 @@ def build_dynamic_stream(client, catalog_entry: singer.CatalogEntry) -> object:
         "key_properties": property(lambda self: key_properties),
         "replication_method": property(lambda self: replication_method),
         "replication_keys": property(lambda self: replication_keys),
-        "path": tap_stream_id,
+        "path": module_path,
         "data_key": "data",
         "is_dynamic": True
     }
@@ -86,7 +91,8 @@ def sync(client: Client, config: Dict, catalog: singer.Catalog, state) -> None:
     """
     Sync selected streams from catalog
     """
-
+    dynamic_schemas, _ = get_dynamic_schema(client)
+    dynamic_schema_path = {item.lower(): item for item in dynamic_schemas.keys()}
     streams_to_sync = []
     for stream in catalog.get_selected_streams(state):
         catalog_entry = catalog.get_stream(stream.tap_stream_id)
@@ -104,7 +110,11 @@ def sync(client: Client, config: Dict, catalog: singer.Catalog, state) -> None:
             if stream_name in STREAMS:
                 stream = STREAMS[stream_name](client, catalog.get_stream(stream_name))
             else:
-                stream = build_dynamic_stream(client, catalog.get_stream(stream_name))
+                stream = build_dynamic_stream(
+                    client,
+                    catalog.get_stream(stream_name),
+                    dynamic_schema_path.get(stream_name)
+                )
 
             parent_name = getattr(stream, "parent", None)
             if parent_name:

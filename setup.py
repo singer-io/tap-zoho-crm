@@ -4,7 +4,7 @@ from setuptools import setup, find_packages
 
 
 setup(name="tap-zoho-crm",
-      version="0.0.1",
+      version="0.0.2",
       description="Singer.io tap for extracting data from Zoho-CRM API",
       author="Stitch",
       url="http://singer.io",
@@ -12,7 +12,7 @@ setup(name="tap-zoho-crm",
       py_modules=["tap_zoho_crm"],
       install_requires=[
         "singer-python==6.1.1",
-        "requests==2.32.4",
+        "requests==2.33.0",
         "backoff==2.2.1",
       ],
       extras_require={"dev": ["parameterized==0.9.0", "pylint", "ipdb", "pytest"]},

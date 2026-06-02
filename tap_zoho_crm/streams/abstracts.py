@@ -1,6 +1,7 @@
 from abc import ABC, abstractmethod
 import json
 from typing import Any, Dict, Tuple, List, Iterator
+from tap_zoho_crm.exceptions import ZohoCRMForbiddenError
 from singer import (
     Transformer,
     get_bookmark,
@@ -46,8 +47,8 @@ class BaseStream(ABC):
     def __init__(self, client=None, catalog=None) -> None:
         self.client = client
         self.catalog = catalog
-        self.schema = catalog.schema.to_dict()
-        self.metadata = metadata.to_map(catalog.metadata)
+        self.schema = catalog.schema.to_dict() if catalog else {}
+        self.metadata = metadata.to_map(catalog.metadata) if catalog else {}
         self.child_to_sync = []
         self.params = {}
         self.data_payload = {}
@@ -196,6 +197,34 @@ class BaseStream(ABC):
         Modify the record before writing to the stream
         """
         return record
+
+    def check_access(self) -> bool:
+        """
+        Verify that the API credentials have read access to this stream.
+        Returns True if accessible, False if a 403 Forbidden error is raised.
+        Child streams always return True (access is governed by the parent check).
+        This means children are never flagged by the access-check loop in _apply_access_checks();
+        their removal from the catalog is handled separately by _prune_inaccessible_children().
+        """
+        if self.parent:
+            return True
+
+        try:
+            self.client.make_request(
+                self.http_method,
+                self.url_endpoint,
+                self.params,
+                self.headers,
+                body=json.dumps(self.data_payload),
+                path=self.path,
+            )
+            return True
+        except ZohoCRMForbiddenError:
+            LOGGER.warning(
+                "Stream '%s' does not have read permission, excluding from catalog.",
+                self.__class__.__name__,
+            )
+            return False
 
     def get_url_endpoint(self, parent_obj: Dict = None) -> str:
         """

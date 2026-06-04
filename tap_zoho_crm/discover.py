@@ -57,8 +57,8 @@ def _prune_inaccessible_children(schemas: dict, field_metadata: dict) -> None:
                 "Stream '%s' excluded from catalog because its parent stream '%s' is not accessible.",
                 name, stream_cls.parent,
             )
-            schemas.pop(name)
-            field_metadata.pop(name)
+            schemas.pop(name, None)
+            field_metadata.pop(name, None)
 
 
 def discover(client: Client) -> Catalog:

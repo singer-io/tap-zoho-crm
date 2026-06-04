@@ -86,14 +86,19 @@ def raise_for_error(response: requests.Response) -> None:
     raise exception_class(message, response) from None
 
 
-def wait_if_retry_after(details):
-    """Backoff handler that checks for a 'retry_after' attribute in the exception
-    and sleeps for the specified duration to respect API rate limits.
+def get_retry_after(exception_info):
+    """Returns the retry_after value from RateLimitError exception.
+    This is used by backoff.runtime to determine wait time.
     """
-    exc = details['exception']
-    if hasattr(exc, 'retry_after') and exc.retry_after is not None:
-        LOGGER.warning(f"Rate limited. Retrying in {exc.retry_after} seconds...")
-        time.sleep(exc.retry_after)
+    exception = exception_info.get('exception') if isinstance(exception_info, dict) else exception_info
+
+    if exception and isinstance(exception, ZohoCRMRateLimitError):
+        retry_after = exception.retry_after if hasattr(exception, 'retry_after') \
+                        and exception.retry_after is not None else 60
+        LOGGER.info(f"Rate limited. Waiting {retry_after} seconds...")
+        return retry_after
+
+    return 60  # Default fallback
 
 class Client:
     """
@@ -222,13 +227,13 @@ class Client:
         factor=2
     )
     @backoff.on_exception(
-        wait_gen=backoff.constant,
-        on_backoff=wait_if_retry_after,
+        backoff.runtime,
         exception=(
             ZohoCRMRateLimitError,
         ),
         max_tries=5,
-        interval=1
+        value=get_retry_after,
+        jitter=None
     )
     def __make_request(
         self, method: str, endpoint: str, **kwargs

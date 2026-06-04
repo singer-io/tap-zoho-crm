@@ -1,10 +1,10 @@
 """Test that with no fields selected for a stream automatic fields are still
 replicated."""
-from base import Zoho_CRMBaseTest
+from base import ZohoCRMBaseTest
 from tap_tester.base_suite_tests.automatic_fields_test import MinimumSelectionTest
 
 
-class Zoho_CRMAutomaticFields(MinimumSelectionTest, Zoho_CRMBaseTest):
+class ZohoCRMAutomaticFields(MinimumSelectionTest, ZohoCRMBaseTest):
     """Test that with no fields selected for a stream automatic fields are
     still replicated."""
 
@@ -15,8 +15,7 @@ class Zoho_CRMAutomaticFields(MinimumSelectionTest, Zoho_CRMBaseTest):
     def streams_to_test(self):
         # excluding dynamic schemas due to lack of test data
         streams_to_exclude = {
-            'Appointments_Rescheduled_History__s',
-            'territories'
+            'territories',
+            'functions__s'
         }
         return self.expected_stream_names().difference(streams_to_exclude)
-

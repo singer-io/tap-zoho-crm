@@ -1,12 +1,10 @@
-from base import Zoho_CRMBaseTest
+from base import ZohoCRMBaseTest
 from tap_tester.base_suite_tests.all_fields_test import AllFieldsTest
 
-KNOWN_MISSING_FIELDS = {
-
-}
+KNOWN_MISSING_FIELDS = {}
 
 
-class Zoho_CRMAllFields(AllFieldsTest, Zoho_CRMBaseTest):
+class ZohoCRMAllFields(AllFieldsTest, ZohoCRMBaseTest):
     """Ensure running the tap with all streams and fields selected results in
     the replication of all fields."""
 
@@ -17,8 +15,7 @@ class Zoho_CRMAllFields(AllFieldsTest, Zoho_CRMBaseTest):
     def streams_to_test(self):
         # excluding dynamic schemas due to lack of test data
         streams_to_exclude = {
-            'Appointments_Rescheduled_History__s',
-            'territories'
+            'territories',
+            'functions__s'
         }
         return self.expected_stream_names().difference(streams_to_exclude)
-

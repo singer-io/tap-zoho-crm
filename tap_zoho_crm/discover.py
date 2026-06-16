@@ -32,16 +32,14 @@ def _apply_access_checks(client: Client, schemas: dict, field_metadata: dict) ->
 
     _prune_inaccessible_children(schemas, field_metadata)
 
-    if inaccessible_streams:
-        total_parent_streams = len([s for s in STREAMS.values() if not s.parent])
-        if len(inaccessible_streams) == total_parent_streams:
-            raise ZohoCRMForbiddenError(
-                "HTTP-error-code: 403, Error: The account credentials supplied do not have 'read' access to any "
-                "of the streams supported by the tap. Data collection cannot be initiated due to lack of permissions."
-            )
+    if not schemas:
+        raise ZohoCRMForbiddenError(
+            "HTTP-error-code: 403, Error: The credentials do not \
+                have 'read' access to any supported streams."
+        )
+    elif inaccessible_streams:
         LOGGER.warning(
-            "The account credentials supplied do not have 'read' access to the following stream(s): %s. "
-            "These streams have been excluded from the catalog.",
+            "No 'read' access to stream(s): %s. Excluded from catalog.",
             ", ".join(inaccessible_streams),
         )
 
@@ -54,7 +52,8 @@ def _prune_inaccessible_children(schemas: dict, field_metadata: dict) -> None:
     for name, stream_cls in list(STREAMS.items()):
         if name in schemas and stream_cls.parent and stream_cls.parent not in schemas:
             LOGGER.warning(
-                "Stream '%s' excluded from catalog because its parent stream '%s' is not accessible.",
+                "Stream '%s' excluded from catalog because its \
+                    parent stream '%s' is not accessible.",
                 name, stream_cls.parent,
             )
             schemas.pop(name, None)

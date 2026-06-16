@@ -221,10 +221,11 @@ class BaseStream(ABC):
                 path=self.path,
             )
             return True
-        except ZohoCRMForbiddenError:
+        except ZohoCRMForbiddenError as exc:
             LOGGER.warning(
-                "Stream '%s' does not have read permission, excluding from catalog.",
+                "Permission Error: Stream '%s' %s. Excluding from catalog.",
                 self.__class__.__name__,
+                exc,
             )
             return False
 

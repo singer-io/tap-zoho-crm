@@ -1,6 +1,6 @@
 from typing import Any, Dict, Mapping, Optional, Tuple
 from datetime import datetime, timedelta
-import time
+import json
 
 import backoff
 import requests
@@ -12,6 +12,7 @@ from tap_zoho_crm.exceptions import (
     ERROR_CODE_EXCEPTION_MAPPING,
     ZohoCRMError,
     ZohoCRMRateLimitError,
+    ZohoCRMUnauthorizedError,
     ZohoCRMInternalServerError,
     ZohoCRMServiceUnavailableError
 )
@@ -19,6 +20,7 @@ from tap_zoho_crm.exceptions import (
 LOGGER = get_logger()
 REQUEST_TIMEOUT = 300
 REFRESH_URL = "https://accounts.zoho.com/oauth/v2/token"
+BASE_API_DOMAIN = "https://www.zohoapis.com"
 DEFAULT_EXPIRY_TIME_IN_SECONDS = 3600
 
 def raise_for_error(response: requests.Response) -> None:
@@ -110,28 +112,42 @@ class Client:
      - HTTP Error handling and retry
     """
 
-    def __init__(self, config: Mapping[str, Any]) -> None:
+    def __init__(self, config: Mapping[str, Any], config_path: Optional[str] = None) -> None:
         self.config = config
+        self._config_path = config_path
         self._session = session()
-        self._access_token = None
-        self._expires_at = None
         self._scope = None
-        self._api_domain = "https://www.zohoapis.com"
-        self._token_type = None
+
+        # Load persisted token from config if available
+        self._access_token = config.get("access_token")
+        self._token_type = config.get("token_type", "Bearer")
+        self._api_domain = config.get("api_domain", BASE_API_DOMAIN)
+        self._expires_at = None
+        saved_expiry = config.get("token_expires_at")
+        if saved_expiry:
+            try:
+                self._expires_at = datetime.fromisoformat(saved_expiry)
+            except (ValueError, TypeError):
+                self._expires_at = None
+
         self.base_url = f"{self._api_domain}/crm/v8"
 
         config_request_timeout = config.get("request_timeout")
         self.request_timeout = float(config_request_timeout) if config_request_timeout else REQUEST_TIMEOUT
 
     def __enter__(self):
-        self._refresh_access_token()
+        # Reuse saved token if it is still valid; only refresh when missing or expired
+        if self._access_token and self._expires_at and self._expires_at > datetime.now():
+            LOGGER.info("Reusing existing access token from config (expires at %s).", self._expires_at)
+        else:
+            self._refresh_access_token()
         return self
 
     def __exit__(self, exception_type, exception_value, traceback):
         self._session.close()
 
     def _refresh_access_token(self) -> None:
-        """Refreshes the access token."""
+        """Refreshes the access token and persists it to the config file."""
         LOGGER.info("Refreshing Access Token")
         resp_json = self.make_request(
             "POST",
@@ -151,11 +167,34 @@ class Client:
         )
         self._access_token = resp_json.get("access_token")
         self._scope = resp_json.get("scope")
-        self._api_domain = resp_json.get("api_domain")
+        api_domain = resp_json.get("api_domain")
+        if api_domain:
+            self._api_domain = api_domain
+            self.base_url = f"{self._api_domain}/crm/v8"
         self._token_type = resp_json.get("token_type", "Bearer")
         expires_in_seconds = resp_json.get("expires_in", DEFAULT_EXPIRY_TIME_IN_SECONDS)
         self._expires_at = datetime.now() + timedelta(seconds=expires_in_seconds)
-        LOGGER.info("Got refreshed access token")
+        self._save_token_to_config()
+        LOGGER.info("Got refreshed access token (expires at %s).", self._expires_at)
+
+    def _save_token_to_config(self) -> None:
+        """Writes the current access token and expiry back to the config file so
+        subsequent runs can reuse it without an extra round-trip."""
+        if not self._config_path:
+            return
+        try:
+            with open(self._config_path, "r") as fh:
+                config_data = json.load(fh)
+            config_data["access_token"] = self._access_token
+            config_data["token_expires_at"] = self._expires_at.isoformat()
+            config_data["token_type"] = self._token_type
+            if self._api_domain:
+                config_data["api_domain"] = self._api_domain
+            with open(self._config_path, "w") as fh:
+                json.dump(config_data, fh, indent=2)
+            LOGGER.info("Access token saved to config file.")
+        except Exception as exc:  # pragma: no cover
+            LOGGER.warning("Failed to save access token to config file: %s", exc)
 
     def get_access_token(self) -> str:
         """Return access token if available or generate one."""
@@ -198,6 +237,9 @@ class Client:
     ) -> Any:
         """
         Sends an HTTP request to the specified API endpoint.
+
+        If the token expires mid-sync and the API returns 401, the token is
+        refreshed automatically and the request is retried once.
         """
         params = params or {}
         headers = headers or {}
@@ -205,13 +247,27 @@ class Client:
         endpoint = endpoint or f"{self.base_url}/{path}"
         if is_auth_req:
             headers, params = self.authenticate(headers, params)
-        return self.__make_request(
-            method, endpoint,
-            headers=headers,
-            params=params,
-            data=body,
-            timeout=self.request_timeout
-        )
+        try:
+            return self.__make_request(
+                method, endpoint,
+                headers=headers,
+                params=params,
+                data=body,
+                timeout=self.request_timeout
+            )
+        except ZohoCRMUnauthorizedError:
+            if not is_auth_req:
+                raise
+            LOGGER.info("Access token rejected (401). Refreshing token and retrying request.")
+            self._refresh_access_token()
+            headers, params = self.authenticate(headers, params)
+            return self.__make_request(
+                method, endpoint,
+                headers=headers,
+                params=params,
+                data=body,
+                timeout=self.request_timeout
+            )
 
     @backoff.on_exception(
         wait_gen=backoff.expo,

@@ -1,6 +1,8 @@
 from typing import Any, Dict, Mapping, Optional, Tuple
 from datetime import datetime, timedelta
 import json
+import os
+import tempfile
 
 import backoff
 import requests
@@ -126,7 +128,12 @@ class Client:
         saved_expiry = config.get("token_expires_at")
         if saved_expiry:
             try:
-                self._expires_at = datetime.fromisoformat(saved_expiry)
+                # normalise a trailing 'Z' (RFC 3339 / UTC) to '+00:00'
+                # because datetime.fromisoformat() does not accept 'Z' on Python < 3.11.
+                expiry_str = saved_expiry
+                if isinstance(expiry_str, str) and expiry_str.endswith("Z"):
+                    expiry_str = expiry_str[:-1] + "+00:00"
+                self._expires_at = datetime.fromisoformat(expiry_str)
             except (ValueError, TypeError):
                 self._expires_at = None
 
@@ -137,7 +144,7 @@ class Client:
 
     def __enter__(self):
         # Reuse saved token if it is still valid; only refresh when missing or expired
-        if self._access_token and self._expires_at and self._expires_at > datetime.now():
+        if self._access_token and self._expires_at and self._expires_at > datetime.now(tz=self._expires_at.tzinfo):
             LOGGER.info("Reusing existing access token from config (expires at %s).", self._expires_at)
         else:
             self._refresh_access_token()
@@ -190,15 +197,20 @@ class Client:
             config_data["token_type"] = self._token_type
             if self._api_domain:
                 config_data["api_domain"] = self._api_domain
-            with open(self._config_path, "w") as fh:
-                json.dump(config_data, fh, indent=2)
+            config_dir = os.path.dirname(os.path.abspath(self._config_path))
+            with tempfile.NamedTemporaryFile(
+                mode="w", dir=config_dir, delete=False, suffix=".tmp"
+            ) as tmp_fh:
+                tmp_path = tmp_fh.name
+                json.dump(config_data, tmp_fh, indent=2)
+            os.replace(tmp_path, self._config_path)
             LOGGER.info("Access token saved to config file.")
         except Exception as exc:  # pragma: no cover
             LOGGER.warning("Failed to save access token to config file: %s", exc)
 
     def get_access_token(self) -> str:
         """Return access token if available or generate one."""
-        if self._access_token and self._expires_at > datetime.now():
+        if self._access_token and self._expires_at and self._expires_at > datetime.now(tz=self._expires_at.tzinfo):
             return self._access_token
 
         self._refresh_access_token()

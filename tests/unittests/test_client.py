@@ -5,9 +5,9 @@ import unittest
 from datetime import datetime, timedelta
 from parameterized import parameterized
 import requests
-from unittest.mock import call, mock_open, patch, MagicMock
+from unittest.mock import patch, MagicMock
 from requests.exceptions import Timeout, ConnectionError, ChunkedEncodingError
-from tap_zoho_crm.client import Client, BASE_API_DOMAIN, DEFAULT_EXPIRY_TIME_IN_SECONDS
+from tap_zoho_crm.client import Client, BASE_API_DOMAIN
 from tap_zoho_crm.exceptions import (
     ZohoCRMBadRequestError,
     ZohoCRMUnauthorizedError,
@@ -193,6 +193,39 @@ class TestTokenChaining(unittest.TestCase):
         }
         client = _make_client(extra_config=cfg)
         self.assertIsNone(client._expires_at)
+
+    def test_init_parses_token_expiry_with_trailing_z(self):
+        """token_expires_at ending in 'Z' (RFC 3339) is parsed correctly."""
+        cfg = {
+            "access_token": "saved_token",
+            "token_expires_at": "2099-01-01T00:00:00Z",
+        }
+        client = _make_client(extra_config=cfg)
+        self.assertIsNotNone(client._expires_at)
+        self.assertEqual(client._expires_at.utcoffset().total_seconds(), 0)
+
+    def test_init_ignores_non_string_token_expiry(self):
+        """A non-string token_expires_at (e.g. integer) leaves _expires_at as None."""
+        cfg = {
+            "access_token": "saved_token",
+            "token_expires_at": 1234567890,
+        }
+        client = _make_client(extra_config=cfg)
+        self.assertIsNone(client._expires_at)
+
+    @patch("tap_zoho_crm.client.Client._refresh_access_token")
+    def test_enter_does_not_raise_with_tz_aware_expiry(self, mock_refresh):
+        """__enter__ does not raise TypeError when _expires_at is timezone-aware."""
+        from datetime import timezone
+        future = datetime.now(tz=timezone.utc) + timedelta(hours=1)
+        cfg = {
+            "access_token": "still_valid",
+            "token_expires_at": future.isoformat(),
+        }
+        client = _make_client(extra_config=cfg)
+        # Should not raise "can't compare offset-naive and offset-aware datetimes"
+        client.__enter__()
+        mock_refresh.assert_not_called()
 
     def test_init_defaults_api_domain_when_absent(self):
         """When api_domain is not in config, BASE_API_DOMAIN is used."""

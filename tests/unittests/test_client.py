@@ -281,7 +281,7 @@ class TestTokenChaining(unittest.TestCase):
     # _refresh_access_token – updates internal state and persists
     # ------------------------------------------------------------------
 
-    @patch("tap_zoho_crm.client.Client._save_token_to_config")
+    @patch("tap_zoho_crm.client.Client._write_config")
     @patch("tap_zoho_crm.client.Client.make_request", return_value=REFRESH_RESPONSE)
     def test_refresh_updates_internal_state(self, mock_req, mock_save):
         """_refresh_access_token stores new token, expiry, domain, and type."""
@@ -294,15 +294,15 @@ class TestTokenChaining(unittest.TestCase):
         self.assertIsNotNone(client._expires_at)
         self.assertGreater(client._expires_at, datetime.now())
 
-    @patch("tap_zoho_crm.client.Client._save_token_to_config")
+    @patch("tap_zoho_crm.client.Client._write_config")
     @patch("tap_zoho_crm.client.Client.make_request", return_value=REFRESH_RESPONSE)
     def test_refresh_calls_save(self, mock_req, mock_save):
-        """_refresh_access_token must call _save_token_to_config."""
+        """_refresh_access_token must call _write_config."""
         client = _make_client()
         client._refresh_access_token()
         mock_save.assert_called_once()
 
-    @patch("tap_zoho_crm.client.Client._save_token_to_config")
+    @patch("tap_zoho_crm.client.Client._write_config")
     @patch("tap_zoho_crm.client.Client.make_request", return_value={**REFRESH_RESPONSE, "api_domain": "https://www.zohoapis.eu"})
     def test_refresh_updates_base_url_on_domain_change(self, mock_req, mock_save):
         """base_url is updated when api_domain changes during refresh."""
@@ -311,7 +311,7 @@ class TestTokenChaining(unittest.TestCase):
         self.assertEqual(client._api_domain, "https://www.zohoapis.eu")
         self.assertEqual(client.base_url, "https://www.zohoapis.eu/crm/v8")
 
-    @patch("tap_zoho_crm.client.Client._save_token_to_config")
+    @patch("tap_zoho_crm.client.Client._write_config")
     @patch("tap_zoho_crm.client.Client.make_request", return_value={k: v for k, v in REFRESH_RESPONSE.items() if k != "api_domain"})
     def test_refresh_keeps_existing_domain_when_absent_in_response(self, mock_req, mock_save):
         """base_url is unchanged when api_domain is absent from token response."""
@@ -321,11 +321,11 @@ class TestTokenChaining(unittest.TestCase):
         self.assertEqual(client._api_domain, "https://www.zohoapis.eu")
 
     # ------------------------------------------------------------------
-    # _save_token_to_config
+    # _write_config
     # ------------------------------------------------------------------
 
     def test_save_token_writes_correct_fields(self):
-        """_save_token_to_config writes access_token, expiry, type, domain."""
+        """_write_config writes access_token, expiry, type, domain."""
         future = datetime.now() + timedelta(hours=1)
         with tempfile.NamedTemporaryFile(mode="w", suffix=".json", delete=False) as fh:
             json.dump(default_config.copy(), fh)
@@ -337,7 +337,7 @@ class TestTokenChaining(unittest.TestCase):
             client._expires_at = future
             client._token_type = "Bearer"
             client._api_domain = "https://www.zohoapis.com"
-            client._save_token_to_config()
+            client._write_config()
 
             with open(tmp_path) as fh:
                 saved = json.load(fh)
@@ -350,21 +350,21 @@ class TestTokenChaining(unittest.TestCase):
             os.unlink(tmp_path)
 
     def test_save_token_no_op_when_config_path_absent(self):
-        """_save_token_to_config does nothing when config_path is None."""
+        """_write_config does nothing when config_path is None."""
         client = _make_client(config_path=None)
         client._access_token = "token"
         client._expires_at = datetime.now() + timedelta(hours=1)
         # Should complete without raising even though there is no file
-        client._save_token_to_config()
+        client._write_config()
 
     def test_save_token_logs_warning_on_io_error(self):
-        """_save_token_to_config logs a warning when the file cannot be written."""
+        """_write_config logs a warning when the file cannot be written."""
         client = _make_client(config_path="/nonexistent/path/config.json")
         client._access_token = "token"
         client._expires_at = datetime.now() + timedelta(hours=1)
         client._token_type = "Bearer"
         # Should not raise — just log a warning
-        client._save_token_to_config()
+        client._write_config()
 
     # ------------------------------------------------------------------
     # get_access_token – lazy refresh

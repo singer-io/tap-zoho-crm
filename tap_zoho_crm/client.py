@@ -1,8 +1,6 @@
 from typing import Any, Dict, Mapping, Optional, Tuple
 from datetime import datetime, timedelta
 import json
-import os
-import tempfile
 
 import backoff
 import requests
@@ -181,31 +179,25 @@ class Client:
         self._token_type = resp_json.get("token_type", "Bearer")
         expires_in_seconds = resp_json.get("expires_in", DEFAULT_EXPIRY_TIME_IN_SECONDS)
         self._expires_at = datetime.now() + timedelta(seconds=expires_in_seconds)
-        self._save_token_to_config()
+        self._write_config()
         LOGGER.info("Got refreshed access token (expires at %s).", self._expires_at)
 
-    def _save_token_to_config(self) -> None:
-        """Writes the current access token and expiry back to the config file so
-        subsequent runs can reuse it without an extra round-trip."""
+    def _write_config(self) -> None:
+        """Writes the current access token and expiry back to the config file."""
         if not self._config_path:
             return
         try:
-            with open(self._config_path, "r") as fh:
+            LOGGER.info("Credentials Refreshed")
+            with open(self._config_path) as fh:
                 config_data = json.load(fh)
             config_data["access_token"] = self._access_token
             config_data["token_expires_at"] = self._expires_at.isoformat()
             config_data["token_type"] = self._token_type
             if self._api_domain:
                 config_data["api_domain"] = self._api_domain
-            config_dir = os.path.dirname(os.path.abspath(self._config_path))
-            with tempfile.NamedTemporaryFile(
-                mode="w", dir=config_dir, delete=False, suffix=".tmp"
-            ) as tmp_fh:
-                tmp_path = tmp_fh.name
-                json.dump(config_data, tmp_fh, indent=2)
-            os.replace(tmp_path, self._config_path)
-            LOGGER.info("Access token saved to config file.")
-        except Exception as exc:  # pragma: no cover
+            with open(self._config_path, "w") as fh:
+                json.dump(config_data, fh, indent=2)
+        except Exception as exc:
             LOGGER.warning("Failed to save access token to config file: %s", exc)
 
     def get_access_token(self) -> str:

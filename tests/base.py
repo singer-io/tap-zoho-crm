@@ -13,6 +13,7 @@ class ZohoCRMBaseTest(BaseCase):
     """
     start_date = "2025-01-01T00:00:00Z"
     IS_FORBIDDEN_STREAM = "is-forbidden-stream"
+    preserve_config = True
 
     @staticmethod
     def tap_name():

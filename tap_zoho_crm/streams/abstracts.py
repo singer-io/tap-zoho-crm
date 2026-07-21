@@ -223,9 +223,9 @@ class BaseStream(ABC):
             return True
         except ZohoCRMForbiddenError as exc:
             LOGGER.warning(
-                "Permission Error: Stream '%s' %s. Excluding from catalog.",
+                "Unauthorized Stream: %s, excluding from catalog. HTTP-Error-Message: '%s'",
                 self.__class__.__name__,
-                exc,
+                str(exc),
             )
             return False
 

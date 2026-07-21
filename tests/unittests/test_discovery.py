@@ -98,7 +98,7 @@ class TestApplyAccessChecks(unittest.TestCase):
                 _apply_access_checks(client, schemas, field_metadata)
                 mock_logger.warning.assert_called_once()
                 warning_msg = mock_logger.warning.call_args[0][0]
-                self.assertIn("Excluded from catalog", warning_msg)
+                self.assertIn("Unauthorized streams excluded from catalog", warning_msg)
 
         self.assertNotIn(inaccessible_name, schemas)
 

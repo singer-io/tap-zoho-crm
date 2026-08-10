@@ -8,7 +8,7 @@ jobs:
       - run:
           name: "Setup virtual env"
           command: |
-            uv venv --python 3.9 /usr/local/share/virtualenvs/tap-zoho-crm
+            uv venv --python 3.12 /usr/local/share/virtualenvs/tap-zoho-crm
             source /usr/local/share/virtualenvs/tap-zoho-crm/bin/activate
             uv pip install -U setuptools
             uv pip install .[dev]
@@ -25,22 +25,34 @@ jobs:
             pylint tap_zoho_crm -d C,R,W
       - add_ssh_keys
       - run:
-          name: "Unit Tests"
+          name: "Unit Tests & Coverage Run"
           command: |
             source /usr/local/share/virtualenvs/tap-zoho-crm/bin/activate
             uv pip install pytest coverage
-            coverage run -m pytest tests/unittests
+            coverage run --source=tap_zoho_crm -m pytest tests/unittests
             coverage html
       - store_test_results:
           path: test_output/report.xml
       - store_artifacts:
           path: htmlcov
+      - run:
+          name: 'Coverage Report'
+          command: |
+            source /usr/local/share/virtualenvs/tap-zoho-crm/bin/activate
+            coverage report -m --fail-under=99
+            coverage html
+      - store_test_results:
+          path: test_output
+      - store_artifacts:
+          path: htmlcov
       # - run:
       #     name: "Integration Tests"
       #     command: |
+      #       source /usr/local/share/virtualenvs/tap-tester/bin/activate
+      #       uv pip install --upgrade awscli
       #       aws s3 cp s3://com-stitchdata-dev-deployment-assets/environments/tap-tester/tap_tester_sandbox dev_env.sh
       #       source dev_env.sh
-      #       source /usr/local/share/virtualenvs/tap-tester/bin/activate
+      #       unset USE_STITCH_BACKEND
       #       run-test --tap=tap-zoho-crm tests
 
 

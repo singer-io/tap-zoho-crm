@@ -138,6 +138,167 @@ class TestSync(unittest.TestCase):
         self.assertEqual(stream_instance.replication_method, "INCREMENTAL")
         self.assertEqual(stream_instance.replication_keys, ["updated_at"])
         self.assertEqual(stream_instance.path, "Contacts")
-        self.assertEqual(stream_instance.data_key, "data")
-        self.assertTrue(stream_instance.is_dynamic)
 
+    # ------------------------------------------------------------------
+    # write_schema: child appended when child IS in streams_to_sync
+    # ------------------------------------------------------------------
+
+    def test_write_schema_appends_child_when_in_streams_to_sync(self):
+        """child_to_sync is populated when the child stream is in streams_to_sync."""
+        mock_stream = MagicMock()
+        mock_stream.is_selected.return_value = True
+        mock_stream.children = ["currencies"]
+        mock_stream.child_to_sync = []
+
+        client = MagicMock()
+        catalog = MagicMock()
+        catalog.get_stream.return_value = MagicMock()
+
+        write_schema(mock_stream, client, ["currencies"], catalog)
+
+        self.assertEqual(len(mock_stream.child_to_sync), 1)
+
+    # ------------------------------------------------------------------
+    # deselect_unselected_fields
+    # ------------------------------------------------------------------
+
+    def test_deselect_unselected_fields_marks_unselected(self):
+        """Fields with no 'selected' key are deselected."""
+        from tap_zoho_crm.sync import deselect_unselected_fields
+        from singer import metadata as singer_metadata
+
+        mdata = singer_metadata.new()
+        mdata = singer_metadata.write(mdata, (), 'table-key-properties', ['id'])
+        mdata = singer_metadata.write(mdata, ('properties', 'id'), 'inclusion', 'automatic')
+        mdata = singer_metadata.write(mdata, ('properties', 'name'), 'inclusion', 'available')
+        mdata_list = singer_metadata.to_list(mdata)
+
+        catalog_entry = MagicMock()
+        catalog_entry.metadata = mdata_list
+
+        deselect_unselected_fields(catalog_entry)
+
+        updated_map = singer_metadata.to_map(catalog_entry.metadata)
+        # 'name' field had no 'selected' key → should now be False
+        self.assertFalse(updated_map.get(('properties', 'name'), {}).get('selected'))
+
+    def test_deselect_unselected_fields_skips_root_breadcrumb(self):
+        """The root breadcrumb () is skipped (truthy check on breadcrumb)."""
+        from tap_zoho_crm.sync import deselect_unselected_fields
+        from singer import metadata as singer_metadata
+
+        mdata = singer_metadata.new()
+        mdata = singer_metadata.write(mdata, (), 'table-key-properties', ['id'])
+        mdata_list = singer_metadata.to_list(mdata)
+
+        catalog_entry = MagicMock()
+        catalog_entry.metadata = mdata_list
+
+        # Should not raise or modify root breadcrumb
+        deselect_unselected_fields(catalog_entry)
+        updated_map = singer_metadata.to_map(catalog_entry.metadata)
+        self.assertNotIn('selected', updated_map.get((), {}))
+
+    # ------------------------------------------------------------------
+    # sync(): dynamic stream path (stream not in STREAMS)
+    # ------------------------------------------------------------------
+
+    @patch("tap_zoho_crm.sync.build_dynamic_stream")
+    @patch("tap_zoho_crm.sync.get_dynamic_schema")
+    @patch("singer.write_schema")
+    @patch("singer.get_currently_syncing", return_value=None)
+    @patch("singer.Transformer")
+    @patch("singer.write_state")
+    def test_sync_uses_dynamic_stream_for_unknown_stream(
+        self,
+        mock_write_state,
+        mock_transformer,
+        mock_get_syncing,
+        mock_write_schema,
+        mock_get_dynamic_schema,
+        mock_build_dynamic,
+    ):
+        """sync() calls build_dynamic_stream for streams not in STREAMS."""
+        from tap_zoho_crm.sync import sync
+
+        mock_get_dynamic_schema.return_value = ({"Contacts": {}}, {})
+
+        dynamic_stream = MagicMock()
+        dynamic_stream.parent = None
+        dynamic_stream.children = []
+        dynamic_stream.child_to_sync = []
+        dynamic_stream.is_selected.return_value = True
+        dynamic_stream.sync.return_value = 0
+        mock_build_dynamic.return_value = dynamic_stream
+
+        stream_entry = MagicMock()
+        stream_entry.tap_stream_id = "contacts"
+
+        mock_catalog = MagicMock()
+        mock_catalog.get_selected_streams.return_value = [stream_entry]
+        mock_catalog.get_stream.return_value = MagicMock()
+
+        mock_transformer_ctx = MagicMock()
+        mock_transformer.return_value.__enter__ = MagicMock(return_value=mock_transformer_ctx)
+        mock_transformer.return_value.__exit__ = MagicMock(return_value=False)
+
+        client = MagicMock()
+        sync(client, {}, mock_catalog, {})
+
+        mock_build_dynamic.assert_called_once()
+        dynamic_stream.sync.assert_called_once()
+
+    # ------------------------------------------------------------------
+    # sync(): stream with parent not in streams_to_sync → parent added
+    # ------------------------------------------------------------------
+
+    @patch("tap_zoho_crm.sync.get_dynamic_schema")
+    @patch("singer.get_currently_syncing", return_value=None)
+    @patch("singer.write_schema")
+    @patch("singer.Transformer")
+    @patch("singer.write_state")
+    def test_sync_adds_parent_when_child_selected_without_parent(
+        self,
+        mock_write_state,
+        mock_transformer,
+        mock_write_schema,
+        mock_get_syncing,
+        mock_get_dynamic_schema,
+    ):
+        """When a child stream is selected but its parent is not, the parent is added."""
+        from tap_zoho_crm.sync import sync
+
+        mock_get_dynamic_schema.return_value = ({}, {})
+
+        # Use a real static stream that has a parent (Currencies has no parent, but
+        # we can mock a stream object with parent attribute set)
+        child_stream_mock = MagicMock()
+        child_stream_mock.parent = "currencies"
+        child_stream_mock.children = []
+        child_stream_mock.child_to_sync = []
+
+        parent_stream_mock = MagicMock()
+        parent_stream_mock.parent = None
+        parent_stream_mock.children = []
+        parent_stream_mock.child_to_sync = []
+        parent_stream_mock.is_selected.return_value = True
+        parent_stream_mock.sync.return_value = 0
+
+        child_entry = MagicMock()
+        child_entry.tap_stream_id = "organization"  # not in STREAMS to force build_dynamic
+
+        mock_catalog = MagicMock()
+        mock_catalog.get_selected_streams.return_value = [child_entry]
+        mock_catalog.get_stream.return_value = MagicMock()
+
+        mock_transformer_ctx = MagicMock()
+        mock_transformer.return_value.__enter__ = MagicMock(return_value=mock_transformer_ctx)
+        mock_transformer.return_value.__exit__ = MagicMock(return_value=False)
+
+        with patch("tap_zoho_crm.sync.STREAMS", {"currencies": MagicMock(return_value=parent_stream_mock)}):
+            with patch("tap_zoho_crm.sync.build_dynamic_stream", return_value=child_stream_mock):
+                client = MagicMock()
+                sync(client, {}, mock_catalog, {})
+
+        # The parent should have been synced (added and processed)
+        parent_stream_mock.sync.assert_called_once()

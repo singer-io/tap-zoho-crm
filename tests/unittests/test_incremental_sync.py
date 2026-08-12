@@ -56,3 +56,9 @@ class TestSync(unittest.TestCase):
         result = self.stream.write_bookmark(state, "test_stream", "updated_at", 200)
         self.assertEqual(result, {'bookmarks': {'test_stream': {'updated_at': 300}}})
 
+    def test_concrete_stream_properties_are_accessible(self):
+        """Exercise the concrete property getter bodies (covers their return statements)."""
+        self.assertEqual(self.stream.key_properties, ["id"])
+        self.assertEqual(self.stream.replication_keys, ["updated_at"])
+        self.assertEqual(self.stream.replication_method, "INCREMENTAL")
+        self.assertEqual(self.stream.tap_stream_id, "stream_1")

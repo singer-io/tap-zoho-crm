@@ -111,4 +111,3 @@ class TestSchemaFunctions(unittest.TestCase):
         """
         result_schema = field_to_property_schema(field)
         self.assertEqual(result_schema, expected_schema)
-

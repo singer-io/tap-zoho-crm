@@ -93,3 +93,7 @@ class TestSync(unittest.TestCase):
         )
         self.assertEqual(result, 50)
 
+    def test_concrete_stream_properties_are_accessible(self):
+        """Exercise the concrete property getter bodies (covers their return statements)."""
+        self.assertEqual(self.stream.key_properties, ["id"])
+        self.assertEqual(self.stream.replication_method, "INCREMENTAL")

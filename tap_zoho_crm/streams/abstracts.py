@@ -208,6 +208,9 @@ class BaseStream(ABC):
         This means children are never flagged by the access-check loop in _apply_access_checks();
         their removal from the catalog is handled separately by _prune_inaccessible_children().
         """
+        if self.parent:
+            return True
+
         try:
             self.client.make_request(
                 self.http_method,

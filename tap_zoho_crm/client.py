@@ -100,6 +100,15 @@ def get_retry_after(exception_info):
 
     return 60  # Default fallback
 
+
+def wait_if_retry_after(details):
+    """Sleep for an exception-provided retry delay, when available."""
+    exception = details.get("exception") if isinstance(details, dict) else None
+    retry_after = getattr(exception, "retry_after", None)
+    if retry_after is not None:
+        time.sleep(retry_after)
+
+
 class Client:
     """
     A Wrapper class.

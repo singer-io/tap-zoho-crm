@@ -1,7 +1,7 @@
 from abc import ABC, abstractmethod
 import json
 from typing import Any, Dict, Tuple, List, Iterator
-from tap_zoho_crm.exceptions import ZohoCRMForbiddenError
+from tap_zoho_crm.exceptions import ZohoCRMForbiddenError, ZohoCRMUnauthorizedError
 from singer import (
     Transformer,
     get_bookmark,
@@ -208,9 +208,6 @@ class BaseStream(ABC):
         This means children are never flagged by the access-check loop in _apply_access_checks();
         their removal from the catalog is handled separately by _prune_inaccessible_children().
         """
-        if self.parent:
-            return True
-
         try:
             self.client.make_request(
                 self.http_method,
@@ -221,7 +218,7 @@ class BaseStream(ABC):
                 path=self.path,
             )
             return True
-        except ZohoCRMForbiddenError as exc:
+        except (ZohoCRMForbiddenError, ZohoCRMUnauthorizedError) as exc:
             LOGGER.warning(
                 "Unauthorized Stream: %s, excluding from catalog. HTTP-Error-Message: '%s'",
                 self.__class__.__name__,

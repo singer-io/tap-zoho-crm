@@ -30,8 +30,6 @@ def _apply_access_checks(client: Client, schemas: dict, field_metadata: dict) ->
         schemas.pop(stream_name, None)
         field_metadata.pop(stream_name, None)
 
-    _prune_inaccessible_children(schemas, field_metadata)
-
     if not schemas:
         raise ZohoCRMForbiddenError(
             "HTTP-error-code: 403, Error: The credentials do not \
@@ -42,22 +40,6 @@ def _apply_access_checks(client: Client, schemas: dict, field_metadata: dict) ->
             "Unauthorized streams excluded from catalog: %s",
             ", ".join(inaccessible_streams),
         )
-
-
-def _prune_inaccessible_children(schemas: dict, field_metadata: dict) -> None:
-    """
-    Remove child streams from the catalog whose parent stream was excluded.
-    Mutates schemas and field_metadata in place.
-    """
-    for name, stream_cls in list(STREAMS.items()):
-        if name in schemas and stream_cls.parent and stream_cls.parent not in schemas:
-            LOGGER.warning(
-                "Stream '%s' excluded from catalog because its \
-                    parent stream '%s' is not accessible.",
-                name, stream_cls.parent,
-            )
-            schemas.pop(name, None)
-            field_metadata.pop(name, None)
 
 
 def discover(client: Client) -> Catalog:

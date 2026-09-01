@@ -61,7 +61,8 @@ class ZohoCRMBaseTest(BaseCase):
                 cls.REPLICATION_METHOD: cls.INCREMENTAL,
                 cls.REPLICATION_KEYS: { "modified_time" },
                 cls.OBEYS_START_DATE: False,
-                cls.API_LIMIT: 5
+                cls.API_LIMIT: 5,
+                cls.IS_FORBIDDEN_STREAM: True
             },
             "users": {
                 cls.PRIMARY_KEYS: { "id" },

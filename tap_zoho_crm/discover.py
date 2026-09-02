@@ -14,6 +14,7 @@ def _apply_access_checks(client: Client, schemas: dict, field_metadata: dict) ->
     """
     Probe each stream for read access and remove inaccessible streams
     (and their children) from schemas and field_metadata in place.
+    Probes both static (STREAMS) and dynamic CRM module streams.
     Note: check_access() always returns True for child streams, so this loop
     effectively identifies only inaccessible parent streams by design.
     Child stream removal is handled separately by _prune_inaccessible_children().
@@ -25,6 +26,28 @@ def _apply_access_checks(client: Client, schemas: dict, field_metadata: dict) ->
         if stream_name in schemas
         and not stream_obj(client=client).check_access()
     ]
+
+    # Probe dynamic CRM modules (schemas not in STREAMS) for access.
+    # These are discovered at runtime and may have module-level permissions.
+    dynamic_modules = [
+        stream_name
+        for stream_name in schemas.keys()
+        if stream_name not in STREAMS
+    ]
+    for module_name in dynamic_modules:
+        try:
+            response = client.make_request(
+                "GET",
+                f"{client.base_url}/settings/fields",
+                params={"module": module_name}
+            )
+            # Successful response indicates the module is accessible
+        except ZohoCRMForbiddenError as exc:
+            LOGGER.warning(
+                f"Dynamic module '{module_name}' is not accessible and will be excluded. "
+                f"HTTP-Error-Message: '{str(exc)}'"
+            )
+            inaccessible_streams.append(module_name)
 
     for stream_name in inaccessible_streams:
         schemas.pop(stream_name, None)

@@ -314,6 +314,8 @@ class TestIncrementalStreamSync(unittest.TestCase):
         state = {}
         self.stream.sync(state=state, transformer=mock_transformer)
 
+        self.assertEqual(self.stream.headers["If-Modified-Since"], "2021-01-01")
+        self.assertNotIn("updated_since", self.stream.params)
         # Only the first record passes the bookmark check
         mock_wr.assert_called_once_with("test_inc_stream", {"id": "1", "updated_at": "2021-06-01"})
 

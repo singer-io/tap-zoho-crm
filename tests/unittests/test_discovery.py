@@ -271,6 +271,44 @@ class TestCheckAccess(unittest.TestCase):
         self.assertTrue(stream.check_access())
         stream.client.make_request.assert_not_called()
 
+    def test_dynamic_modules_are_probed_for_access(self):
+        """Dynamic CRM modules in schemas are probed for access during checks."""
+        client = MagicMock()
+        client.base_url = "https://www.zohoapis.com/crm/v8"
+
+        # Static streams (from STREAMS): "currencies", "users", etc.
+        # Dynamic modules: "Leads", "Deals", "CustomModule"
+        schemas = {
+            "currencies": {"type": "object", "properties": {}},
+            "Leads": {"type": "object", "properties": {}},
+            "Deals": {"type": "object", "properties": {}},
+            "CustomModule": {"type": "object", "properties": {}},
+        }
+        field_metadata = {
+            "currencies": [],
+            "Leads": [],
+            "Deals": [],
+            "CustomModule": [],
+        }
+
+        mock_streams = {"currencies": _make_stream_cls(accessible=True)}
+
+        with patch("tap_zoho_crm.discover.STREAMS", mock_streams):
+            with patch("tap_zoho_crm.discover.LOGGER"):
+                # Leads succeeds, Deals is forbidden, CustomModule succeeds
+                client.make_request.side_effect = [
+                    {"fields": []},  # Leads OK
+                    ZohoCRMForbiddenError("403"),  # Deals forbidden
+                    {"fields": []},  # CustomModule OK
+                ]
+                _apply_access_checks(client, schemas, field_metadata)
+
+        # Deals should be removed, Leads and CustomModule retained
+        self.assertIn("currencies", schemas)
+        self.assertIn("Leads", schemas)
+        self.assertNotIn("Deals", schemas)
+        self.assertIn("CustomModule", schemas)
+
 SAMPLE_SCHEMA = {
     "type": "object",
     "properties": {

@@ -171,6 +171,13 @@ class TestRaiseForErrorPaths(unittest.TestCase):
         result = raise_for_error(resp)
         self.assertIsNone(result)
 
+    def test_raise_for_error_returns_none_for_304(self):
+        """304 Not Modified is a successful empty incremental response."""
+        from tap_zoho_crm.client import raise_for_error
+        resp = MockResponse(304, text={})
+        result = raise_for_error(resp)
+        self.assertIsNone(result)
+
     def test_raise_for_error_handles_json_decode_failure(self):
         """When response.json() raises, falls back to empty dict for error parsing."""
         from tap_zoho_crm.client import raise_for_error
@@ -409,6 +416,16 @@ class TestMakeRequestInnerBehavior(unittest.TestCase):
 
         with patch.object(client._session, "request", return_value=resp):
             result = client._Client__make_request("GET", "https://example.com/api")
+
+        self.assertEqual(result, {})
+
+    def test_returns_empty_dict_for_304_response(self):
+        """304 Not Modified → returns empty dict."""
+        client = Client(default_config)
+        resp = MockResponse(304, text={})
+
+        with patch.object(client._session, "request", return_value=resp):
+            result = client._Client__make_request("GET", "https://api.example.com/resource")
 
         self.assertEqual(result, {})
 

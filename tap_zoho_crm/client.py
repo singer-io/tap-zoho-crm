@@ -1,5 +1,8 @@
 from typing import Any, Dict, Mapping, Optional, Tuple
 from datetime import datetime, timedelta
+import hashlib
+import json
+import os
 import time
 
 import backoff
@@ -127,17 +130,62 @@ class Client:
         self._scope = None
         self._api_domain = "https://www.zohoapis.com"
         self._token_type = None
+        self._token_cache_path = config.get("token_cache_path")
         self.base_url = f"{self._api_domain}/crm/v8"
 
         config_request_timeout = config.get("request_timeout")
         self.request_timeout = float(config_request_timeout) if config_request_timeout else REQUEST_TIMEOUT
 
     def __enter__(self):
-        self._refresh_access_token()
+        if not self._load_cached_access_token():
+            self._refresh_access_token()
         return self
 
     def __exit__(self, exception_type, exception_value, traceback):
         self._session.close()
+
+    def _token_cache_identity(self) -> str:
+        credentials = f"{self.config['client_id']}:{self.config['refresh_token']}"
+        return hashlib.sha256(credentials.encode("utf-8")).hexdigest()
+
+    def _load_cached_access_token(self) -> bool:
+        if not self._token_cache_path:
+            return False
+
+        try:
+            with open(self._token_cache_path, encoding="utf-8") as cache_file:
+                cached_token = json.load(cache_file)
+        except (OSError, ValueError):
+            return False
+
+        if cached_token.get("identity") != self._token_cache_identity():
+            return False
+        if cached_token.get("expires_at", 0) <= time.time() + 60:
+            return False
+
+        self._access_token = cached_token.get("access_token")
+        self._scope = cached_token.get("scope")
+        self._api_domain = cached_token.get("api_domain", self._api_domain)
+        self._token_type = cached_token.get("token_type", "Bearer")
+        self._expires_at = datetime.fromtimestamp(cached_token["expires_at"])
+        self.base_url = f"{self._api_domain}/crm/v8"
+        return bool(self._access_token)
+
+    def _cache_access_token(self) -> None:
+        if not self._token_cache_path:
+            return
+
+        cached_token = {
+            "identity": self._token_cache_identity(),
+            "access_token": self._access_token,
+            "scope": self._scope,
+            "api_domain": self._api_domain,
+            "token_type": self._token_type,
+            "expires_at": self._expires_at.timestamp(),
+        }
+        with open(self._token_cache_path, "w", encoding="utf-8") as cache_file:
+            os.chmod(self._token_cache_path, 0o600)
+            json.dump(cached_token, cache_file)
 
     def _refresh_access_token(self) -> None:
         """Refreshes the access token."""
@@ -164,6 +212,8 @@ class Client:
         self._token_type = resp_json.get("token_type", "Bearer")
         expires_in_seconds = resp_json.get("expires_in", DEFAULT_EXPIRY_TIME_IN_SECONDS)
         self._expires_at = datetime.now() + timedelta(seconds=expires_in_seconds)
+        self.base_url = f"{self._api_domain}/crm/v8"
+        self._cache_access_token()
         LOGGER.info("Got refreshed access token")
 
     def get_access_token(self) -> str:

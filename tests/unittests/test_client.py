@@ -1,4 +1,8 @@
 import unittest
+import json
+import os
+import tempfile
+import time
 from parameterized import parameterized
 import requests
 from unittest.mock import patch, MagicMock
@@ -308,6 +312,70 @@ class TestClientRefreshAccessToken(unittest.TestCase):
         client = Client(default_config)
         client._refresh_access_token()
         self.assertEqual(client._token_type, "Bearer")
+
+
+class TestClientTokenCache(unittest.TestCase):
+    """Tests for sharing a valid token between tap processes."""
+
+    def setUp(self):
+        self.cache_file = tempfile.NamedTemporaryFile(delete=False)
+        self.cache_file.close()
+        os.unlink(self.cache_file.name)
+        self.config = {**default_config, "token_cache_path": self.cache_file.name}
+
+    def tearDown(self):
+        if os.path.exists(self.cache_file.name):
+            os.unlink(self.cache_file.name)
+
+    def test_refresh_writes_and_new_client_loads_cache(self):
+        token_response = {
+            "access_token": "shared_token",
+            "scope": "ZohoCRM.modules.ALL",
+            "api_domain": "https://www.zohoapis.eu",
+            "token_type": "Bearer",
+            "expires_in": 3600
+        }
+        first_client = Client(self.config)
+        with patch.object(
+                first_client, "_Client__make_request", return_value=token_response):
+            first_client._refresh_access_token()
+
+        second_client = Client(self.config)
+        with patch.object(second_client, "_refresh_access_token") as mock_refresh:
+            second_client.__enter__()
+
+        mock_refresh.assert_not_called()
+        self.assertEqual(second_client._access_token, "shared_token")
+        self.assertEqual(second_client.base_url, "https://www.zohoapis.eu/crm/v8")
+        self.assertEqual(os.stat(self.cache_file.name).st_mode & 0o777, 0o600)
+
+    def test_ignores_missing_invalid_expired_and_wrong_identity_cache(self):
+        client = Client(self.config)
+        self.assertFalse(client._load_cached_access_token())
+
+        with open(self.cache_file.name, "w", encoding="utf-8") as cache_file:
+            cache_file.write("not json")
+        self.assertFalse(client._load_cached_access_token())
+
+        cache_values = {
+            "identity": client._token_cache_identity(),
+            "access_token": "expired",
+            "expires_at": time.time() - 1
+        }
+        with open(self.cache_file.name, "w", encoding="utf-8") as cache_file:
+            json.dump(cache_values, cache_file)
+        self.assertFalse(client._load_cached_access_token())
+
+        cache_values["identity"] = "other-credentials"
+        cache_values["expires_at"] = time.time() + 3600
+        with open(self.cache_file.name, "w", encoding="utf-8") as cache_file:
+            json.dump(cache_values, cache_file)
+        self.assertFalse(client._load_cached_access_token())
+
+    def test_client_without_cache_path_does_not_read_or_write_cache(self):
+        client = Client(default_config)
+        self.assertFalse(client._load_cached_access_token())
+        client._cache_access_token()
 
 
 class TestClientGetAccessToken(unittest.TestCase):

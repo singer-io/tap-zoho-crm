@@ -193,7 +193,8 @@ class ZohoCRMBaseTest(BaseCase):
         """Configuration of properties required for the tap."""
         return_value = {
             "start_date": self.start_date,
-            "page_size": "5"
+            "page_size": "5",
+            "token_cache_path": "/tmp/tap-zoho-crm-token-cache.json"
         }
         if original:
             return return_value

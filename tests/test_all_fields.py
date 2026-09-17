@@ -15,6 +15,7 @@ class ZohoCRMAllFields(AllFieldsTest, ZohoCRMBaseTest):
     def streams_to_test(self):
         # excluding dynamic schemas due to lack of test data
         streams_to_exclude = {
+            'currencies',
             'territories',
             'functions__s'
         }

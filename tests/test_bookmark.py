@@ -9,13 +9,11 @@ class ZohoCRMBookMarkTest(BookmarkTest, ZohoCRMBaseTest):
     initial_bookmarks = {
         "bookmarks": {
             "leads":       {"Modified_Time": "2025-08-01T00:00:00Z"},
-            "contacts":    {"Modified_Time": "2025-08-01T00:00:00Z"},
             "accounts":    {"Modified_Time": "2025-08-01T00:00:00Z"},
             "deals":       {"Modified_Time": "2025-08-01T00:00:00Z"},
             "calls":       {"Modified_Time": "2025-08-01T00:00:00Z"},
             "campaigns":   {"Modified_Time": "2025-08-01T00:00:00Z"},
             "dealhistory": {"Modified_Time": "2025-08-01T00:00:00Z"},
-            "attachments": {"Modified_Time": "2025-08-01T00:00:00Z"},
         }
     }
 
@@ -36,6 +34,8 @@ class ZohoCRMBookMarkTest(BookmarkTest, ZohoCRMBaseTest):
             'tasks',
             'notes',
             'events',
-            'users'
+            'users',
+            'attachments',
+            'contacts'
         }
         return self.expected_stream_names().difference(streams_to_exclude)

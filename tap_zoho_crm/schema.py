@@ -9,6 +9,7 @@ from singer import (
 
 from tap_zoho_crm.streams import STREAMS
 from tap_zoho_crm.client import Client
+from tap_zoho_crm.exceptions import ZohoCRMForbiddenError
 
 LOGGER = singer.get_logger()
 PK_OVERRIDES = {}
@@ -235,7 +236,14 @@ def get_dynamic_schema(client: Client) -> Tuple[Dict, Dict]:
     available_modules.extend(FIELD_METADATA_ONLY_MODULES)
 
     for module in available_modules:
-        module_metadata = get_dynamic_metadata(client, module=module)
+        try:
+            module_metadata = get_dynamic_metadata(client, module=module)
+        except ZohoCRMForbiddenError as exc:
+            LOGGER.warning(
+                f"Module '{module}' excluded from catalog due to access restriction. "
+                f"HTTP-Error-Message: '{str(exc)}'"
+            )
+            continue
         module_metadata = module_metadata.get("fields", [])
         if not module_metadata:
             LOGGER.info(f"Skipping module {module}: No field metadata available.")

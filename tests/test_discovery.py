@@ -1,9 +1,9 @@
 """Test tap discovery mode and metadata."""
-from base import Zoho_CRMBaseTest
+from base import ZohoCRMBaseTest
 from tap_tester.base_suite_tests.discovery_test import DiscoveryTest
 
 
-class Zoho_CRMDiscoveryTest(DiscoveryTest, Zoho_CRMBaseTest):
+class ZohoCRMDiscoveryTest(DiscoveryTest, ZohoCRMBaseTest):
     """Test tap discovery mode and metadata conforms to standards."""
 
     @staticmethod
@@ -14,4 +14,3 @@ class Zoho_CRMDiscoveryTest(DiscoveryTest, Zoho_CRMBaseTest):
         # excluding dynamic schemas
         streams_to_exclude = {}
         return self.expected_stream_names().difference(streams_to_exclude)
-

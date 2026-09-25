@@ -362,6 +362,53 @@ class TestGetDynamicSchema(unittest.TestCase):
 
         self.assertEqual(schemas, {})
 
+    @patch('tap_zoho_crm.schema.metrics.http_request_timer')
+    def test_get_dynamic_schema_skips_module_on_forbidden_error(self, mock_timer):
+        """When a module returns 403 Forbidden, it is skipped with a warning."""
+        from tap_zoho_crm.exceptions import ZohoCRMForbiddenError
+        
+        mock_timer.return_value.__enter__ = MagicMock(return_value=MagicMock())
+        mock_timer.return_value.__exit__ = MagicMock(return_value=False)
+
+        modules_resp = {
+            "modules": [
+                {"api_name": "AllowedMod", "viewable": True, "api_supported": True},
+                {"api_name": "ForbiddenMod", "viewable": True, "api_supported": True},
+            ]
+        }
+        # First call returns modules, then AllowedMod fields, then ForbiddenMod raises 403
+        allowed_fields = {
+            "fields": [
+                {
+                    "api_name": "id",
+                    "visible": True,
+                    "view_type": {"view": True},
+                    "virtual_field": False,
+                    "display_type": 1,
+                    "data_type": "text",
+                    "json_type": "string"
+                }
+            ]
+        }
+
+        mock_client = MagicMock()
+        mock_client.base_url = "https://www.zohoapis.com/crm/v8"
+        mock_client.make_request.side_effect = [
+            modules_resp,
+            allowed_fields,
+            ZohoCRMForbiddenError("403 Forbidden")
+        ]
+
+        with patch('tap_zoho_crm.schema.LOGGER') as mock_logger:
+            schemas, _ = get_dynamic_schema(mock_client)
+
+        # ForbiddenMod should be skipped, AllowedMod should be included
+        self.assertIn("AllowedMod", schemas)
+        self.assertNotIn("ForbiddenMod", schemas)
+        mock_logger.warning.assert_called_once()
+        warning_msg = str(mock_logger.warning.call_args)
+        self.assertIn("ForbiddenMod", warning_msg)
+
 
 class TestGetDynamicMetadata(unittest.TestCase):
 
